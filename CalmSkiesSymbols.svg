@@ -1,0 +1,317 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 960" style="background:#F7FBFF;font-family:Calibri,Arial,sans-serif;">
+  <!-- Calm Skies Travel — Symbol Library v2.0 | Created by IBM Bob -->
+  <!-- 20 symbols · Circle backgrounds · High-contrast solid icons -->
+  <!-- Blue = #5BA4CF (primary) · Green = #6BBF8E · Yellow = #F9C74F -->
+  <!-- Icon fill = white on blue/green · #2D3748 dark on yellow -->
+
+  <!-- ═══════════════════ ROW 1 ═══════════════════ -->
+  <!-- Parent | Child | Home | Airport | Plane -->
+
+  <!-- PARENT — blue -->
+  <g transform="translate(60,60)">
+    <circle cx="50" cy="50" r="50" fill="#5BA4CF"/>
+    <!-- head -->
+    <circle cx="50" cy="26" r="11" fill="white"/>
+    <!-- body + legs -->
+    <path d="M31,44 Q50,40 69,44 L73,82 H60 L50,65 L40,82 H27 Z" fill="white"/>
+    <!-- arms -->
+    <line x1="31" y1="50" x2="16" y2="66" stroke="white" stroke-width="5" stroke-linecap="round"/>
+    <line x1="69" y1="50" x2="84" y2="66" stroke="white" stroke-width="5" stroke-linecap="round"/>
+    <text x="50" y="116" font-size="13" fill="#2D3748" text-anchor="middle">Parent</text>
+  </g>
+
+  <!-- CHILD — green -->
+  <g transform="translate(220,60)">
+    <circle cx="50" cy="50" r="50" fill="#6BBF8E"/>
+    <!-- head -->
+    <circle cx="50" cy="28" r="9" fill="white"/>
+    <!-- body + legs smaller -->
+    <path d="M34,44 Q50,40 66,44 L69,78 H58 L50,64 L42,78 H31 Z" fill="white"/>
+    <!-- arms -->
+    <line x1="34" y1="49" x2="20" y2="63" stroke="white" stroke-width="4" stroke-linecap="round"/>
+    <line x1="66" y1="49" x2="80" y2="63" stroke="white" stroke-width="4" stroke-linecap="round"/>
+    <!-- star of joy -->
+    <polygon points="50,8 52,14 58,14 53,18 55,24 50,20 45,24 47,18 42,14 48,14" fill="white" opacity="0.9"/>
+    <text x="50" y="116" font-size="13" fill="#2D3748" text-anchor="middle">Child</text>
+  </g>
+
+  <!-- HOME — blue -->
+  <g transform="translate(380,60)">
+    <circle cx="50" cy="50" r="50" fill="#5BA4CF"/>
+    <!-- roof -->
+    <polygon points="50,15 15,42 85,42" fill="white"/>
+    <!-- wall -->
+    <rect x="22" y="42" width="56" height="38" rx="2" fill="white"/>
+    <!-- door -->
+    <rect x="38" y="56" width="15" height="24" rx="3" fill="#5BA4CF"/>
+    <!-- window left -->
+    <rect x="26" y="50" width="10" height="10" rx="2" fill="#5BA4CF"/>
+    <!-- window right -->
+    <rect x="64" y="50" width="10" height="10" rx="2" fill="#5BA4CF"/>
+    <text x="50" y="116" font-size="13" fill="#2D3748" text-anchor="middle">Home</text>
+  </g>
+
+  <!-- AIRPORT — blue -->
+  <g transform="translate(540,60)">
+    <circle cx="50" cy="50" r="50" fill="#5BA4CF"/>
+    <!-- terminal block -->
+    <rect x="10" y="52" width="80" height="26" rx="4" fill="white"/>
+    <!-- control tower -->
+    <rect x="40" y="24" width="20" height="30" rx="3" fill="white"/>
+    <!-- tower top -->
+    <rect x="33" y="18" width="34" height="10" rx="3" fill="white"/>
+    <!-- windows on terminal -->
+    <rect x="17" y="59" width="10" height="9" rx="2" fill="#5BA4CF"/>
+    <rect x="33" y="59" width="10" height="9" rx="2" fill="#5BA4CF"/>
+    <rect x="57" y="59" width="10" height="9" rx="2" fill="#5BA4CF"/>
+    <rect x="73" y="59" width="10" height="9" rx="2" fill="#5BA4CF"/>
+    <!-- tower window -->
+    <rect x="44" y="28" width="12" height="8" rx="2" fill="#5BA4CF"/>
+    <text x="50" y="116" font-size="13" fill="#2D3748" text-anchor="middle">Airport</text>
+  </g>
+
+  <!-- PLANE — blue -->
+  <g transform="translate(700,60)">
+    <circle cx="50" cy="50" r="50" fill="#5BA4CF"/>
+    <!-- fuselage body -->
+    <ellipse cx="50" cy="50" rx="30" ry="9" fill="white" transform="rotate(-35,50,50)"/>
+    <!-- main wing -->
+    <polygon points="50,50 22,68 38,54" fill="white" transform="rotate(-35,50,50)"/>
+    <!-- small wing front -->
+    <polygon points="50,50 38,30 45,44" fill="white" transform="rotate(-35,50,50)"/>
+    <!-- tail fin -->
+    <polygon points="72,52 82,42 74,50" fill="white" transform="rotate(-35,50,50)"/>
+    <!-- windows strip -->
+    <circle cx="46" cy="44" r="2.5" fill="#5BA4CF" transform="rotate(-35,50,50)"/>
+    <circle cx="52" cy="42" r="2.5" fill="#5BA4CF" transform="rotate(-35,50,50)"/>
+    <circle cx="58" cy="40" r="2.5" fill="#5BA4CF" transform="rotate(-35,50,50)"/>
+    <text x="50" y="116" font-size="13" fill="#2D3748" text-anchor="middle">Plane</text>
+  </g>
+
+  <!-- ═══════════════════ ROW 2 ═══════════════════ -->
+  <!-- Destination | Going Home | Sunflower | DPNA | TSA Cares -->
+
+  <!-- DESTINATION — green -->
+  <g transform="translate(60,230)">
+    <circle cx="50" cy="50" r="50" fill="#6BBF8E"/>
+    <!-- map pin -->
+    <path d="M50,16 C34,16 22,28 22,40 C22,57 50,84 50,84 C50,84 78,57 78,40 C78,28 66,16 50,16 Z" fill="white"/>
+    <!-- inner circle -->
+    <circle cx="50" cy="40" r="10" fill="#6BBF8E"/>
+    <text x="50" y="116" font-size="13" fill="#2D3748" text-anchor="middle">Destination</text>
+  </g>
+
+  <!-- GOING HOME — blue -->
+  <g transform="translate(220,230)">
+    <circle cx="50" cy="50" r="50" fill="#5BA4CF"/>
+    <!-- circular arrow -->
+    <path d="M20,50 A30,30 0 1,1 68,72" fill="none" stroke="white" stroke-width="7" stroke-linecap="round"/>
+    <!-- arrowhead -->
+    <polygon points="68,72 56,64 76,60" fill="white"/>
+    <text x="50" y="116" font-size="12" fill="#2D3748" text-anchor="middle">Going Home</text>
+  </g>
+
+  <!-- SUNFLOWER LANYARD — yellow -->
+  <g transform="translate(380,230)">
+    <circle cx="50" cy="50" r="50" fill="#F9C74F"/>
+    <!-- petals (8 ovals around center) -->
+    <ellipse cx="50" cy="21" rx="6" ry="10" fill="#2D3748"/>
+    <ellipse cx="50" cy="79" rx="6" ry="10" fill="#2D3748"/>
+    <ellipse cx="21" cy="50" rx="10" ry="6" fill="#2D3748"/>
+    <ellipse cx="79" cy="50" rx="10" ry="6" fill="#2D3748"/>
+    <ellipse cx="29" cy="29" rx="6" ry="10" fill="#2D3748" transform="rotate(45,29,29)"/>
+    <ellipse cx="71" cy="29" rx="6" ry="10" fill="#2D3748" transform="rotate(-45,71,29)"/>
+    <ellipse cx="29" cy="71" rx="6" ry="10" fill="#2D3748" transform="rotate(-45,29,71)"/>
+    <ellipse cx="71" cy="71" rx="6" ry="10" fill="#2D3748" transform="rotate(45,71,71)"/>
+    <!-- center disk -->
+    <circle cx="50" cy="50" r="16" fill="#2D3748"/>
+    <circle cx="50" cy="50" r="9" fill="#F9C74F"/>
+    <text x="50" y="116" font-size="12" fill="#2D3748" text-anchor="middle">Sunflower</text>
+  </g>
+
+  <!-- DPNA CODE — blue -->
+  <g transform="translate(540,230)">
+    <circle cx="50" cy="50" r="50" fill="#5BA4CF"/>
+    <!-- document -->
+    <rect x="22" y="16" width="44" height="56" rx="5" fill="white"/>
+    <!-- dog-ear corner -->
+    <polygon points="55,16 66,27 55,27" fill="#5BA4CF"/>
+    <!-- lines of text -->
+    <rect x="28" y="32" width="28" height="4" rx="2" fill="#5BA4CF"/>
+    <rect x="28" y="41" width="28" height="4" rx="2" fill="#5BA4CF"/>
+    <rect x="28" y="50" width="20" height="4" rx="2" fill="#5BA4CF"/>
+    <!-- green check badge -->
+    <circle cx="68" cy="68" r="14" fill="#6BBF8E"/>
+    <polyline points="61,68 66,74 76,61" fill="none" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="50" y="116" font-size="12" fill="#2D3748" text-anchor="middle">DPNA Code</text>
+  </g>
+
+  <!-- TSA CARES — blue -->
+  <g transform="translate(700,230)">
+    <circle cx="50" cy="50" r="50" fill="#5BA4CF"/>
+    <!-- shield -->
+    <path d="M50,16 L78,28 L78,52 C78,68 50,84 50,84 C50,84 22,68 22,52 L22,28 Z" fill="white"/>
+    <!-- heart inside shield -->
+    <path d="M50,62 C50,62 32,50 32,40 C32,34 37,30 42,33 C45,35 48,38 50,40 C52,38 55,35 58,33 C63,30 68,34 68,40 C68,50 50,62 50,62 Z" fill="#F28B82"/>
+    <text x="50" y="116" font-size="12" fill="#2D3748" text-anchor="middle">TSA Cares</text>
+  </g>
+
+  <!-- ═══════════════════ ROW 3 ═══════════════════ -->
+  <!-- TSA PreCheck | Sensory Room | Rehearsal | Go Bag | Ship Ahead -->
+
+  <!-- TSA PRECHECK — blue -->
+  <g transform="translate(60,400)">
+    <circle cx="50" cy="50" r="50" fill="#5BA4CF"/>
+    <!-- star badge -->
+    <polygon points="50,16 55,33 73,33 59,43 64,61 50,51 36,61 41,43 27,33 45,33" fill="white"/>
+    <!-- checkmark on star -->
+    <polyline points="40,44 47,52 62,36" fill="none" stroke="#5BA4CF" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="50" y="116" font-size="11" fill="#2D3748" text-anchor="middle">TSA PreCheck</text>
+  </g>
+
+  <!-- SENSORY ROOM — green -->
+  <g transform="translate(220,400)">
+    <circle cx="50" cy="50" r="50" fill="#6BBF8E"/>
+    <!-- headphone arc -->
+    <path d="M26,48 C26,30 74,30 74,48" fill="none" stroke="white" stroke-width="6" stroke-linecap="round"/>
+    <!-- left ear cup -->
+    <rect x="18" y="46" width="14" height="18" rx="7" fill="white"/>
+    <!-- right ear cup -->
+    <rect x="68" y="46" width="14" height="18" rx="7" fill="white"/>
+    <!-- calm wave lines below -->
+    <path d="M24,76 C30,72 36,80 42,76 C48,72 54,80 60,76 C66,72 72,80 76,76" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"/>
+    <text x="50" y="116" font-size="11" fill="#2D3748" text-anchor="middle">Sensory Room</text>
+  </g>
+
+  <!-- AIRPORT REHEARSAL — blue -->
+  <g transform="translate(380,400)">
+    <circle cx="50" cy="50" r="50" fill="#5BA4CF"/>
+    <!-- small plane top right -->
+    <path d="M60,18 L76,24 L68,28 L72,36 L64,32 L56,42 L52,36 L60,30 L52,26 Z" fill="white"/>
+    <!-- practice person (child figure) -->
+    <circle cx="30" cy="34" r="8" fill="white"/>
+    <path d="M20,48 Q30,44 40,48 L42,68 H35 L30,57 L25,68 H18 Z" fill="white"/>
+    <!-- forward arrow = practice/rehearse -->
+    <path d="M44,55 L60,55" stroke="white" stroke-width="4" stroke-linecap="round"/>
+    <polygon points="60,55 53,50 53,60" fill="white"/>
+    <text x="50" y="116" font-size="11" fill="#2D3748" text-anchor="middle">Rehearsal</text>
+  </g>
+
+  <!-- GO BAG — green -->
+  <g transform="translate(540,400)">
+    <circle cx="50" cy="50" r="50" fill="#6BBF8E"/>
+    <!-- backpack body -->
+    <rect x="22" y="36" width="44" height="44" rx="10" fill="white"/>
+    <!-- top handle arc -->
+    <path d="M33,36 C33,22 67,22 67,36" fill="none" stroke="white" stroke-width="6" stroke-linecap="round"/>
+    <!-- left strap -->
+    <path d="M22,44 C12,48 12,64 22,68" fill="none" stroke="white" stroke-width="4" stroke-linecap="round"/>
+    <!-- front pocket -->
+    <rect x="28" y="52" width="32" height="20" rx="5" fill="#6BBF8E"/>
+    <!-- pocket zipper -->
+    <line x1="31" y1="61" x2="57" y2="61" stroke="white" stroke-width="2.5" stroke-dasharray="4,3"/>
+    <text x="50" y="116" font-size="13" fill="#2D3748" text-anchor="middle">Go Bag</text>
+  </g>
+
+  <!-- SHIP AHEAD — blue -->
+  <g transform="translate(700,400)">
+    <circle cx="50" cy="50" r="50" fill="#5BA4CF"/>
+    <!-- box body -->
+    <rect x="16" y="42" width="42" height="34" rx="4" fill="white"/>
+    <!-- box lid -->
+    <polygon points="16,42 37,30 58,42" fill="white"/>
+    <!-- center fold line on lid -->
+    <line x1="37" y1="30" x2="37" y2="42" stroke="#5BA4CF" stroke-width="2"/>
+    <!-- tape strip down box -->
+    <line x1="37" y1="42" x2="37" y2="76" stroke="#A8D4EF" stroke-width="3"/>
+    <!-- arrow going right = shipped -->
+    <path d="M62,54 L82,54" stroke="white" stroke-width="5" stroke-linecap="round"/>
+    <polygon points="82,54 73,48 73,60" fill="white"/>
+    <text x="50" y="116" font-size="11" fill="#2D3748" text-anchor="middle">Ship Ahead</text>
+  </g>
+
+  <!-- ═══════════════════ ROW 4 ═══════════════════ -->
+  <!-- Heart | Social Story | Blanket | Fidget Toy | Autism Card -->
+
+  <!-- HEART — yellow -->
+  <g transform="translate(60,570)">
+    <circle cx="50" cy="50" r="50" fill="#F9C74F"/>
+    <path d="M50,76 C50,76 16,54 16,34 C16,22 24,15 34,19 C39,21 44,26 50,32 C56,26 61,21 66,19 C76,15 84,22 84,34 C84,54 50,76 50,76 Z" fill="#2D3748"/>
+    <text x="50" y="116" font-size="13" fill="#2D3748" text-anchor="middle">Heart</text>
+  </g>
+
+  <!-- SOCIAL STORY — green -->
+  <g transform="translate(220,570)">
+    <circle cx="50" cy="50" r="50" fill="#6BBF8E"/>
+    <!-- open book -->
+    <path d="M12,28 L12,72 Q50,64 50,64 Q50,64 88,72 L88,28 Q50,20 50,20 Q50,20 12,28 Z" fill="white"/>
+    <!-- spine -->
+    <line x1="50" y1="20" x2="50" y2="64" stroke="#6BBF8E" stroke-width="3"/>
+    <!-- text lines left page -->
+    <line x1="18" y1="36" x2="44" y2="33" stroke="#6BBF8E" stroke-width="3" stroke-linecap="round"/>
+    <line x1="18" y1="44" x2="44" y2="41" stroke="#6BBF8E" stroke-width="3" stroke-linecap="round"/>
+    <line x1="18" y1="52" x2="40" y2="49" stroke="#6BBF8E" stroke-width="3" stroke-linecap="round"/>
+    <!-- star right page -->
+    <polygon points="69,30 72,40 82,40 74,46 77,56 69,50 61,56 64,46 56,40 66,40" fill="#F9C74F"/>
+    <text x="50" y="116" font-size="11" fill="#2D3748" text-anchor="middle">Social Story</text>
+  </g>
+
+  <!-- BLANKET / COMFORT — yellow -->
+  <g transform="translate(380,570)">
+    <circle cx="50" cy="50" r="50" fill="#F9C74F"/>
+    <!-- folded blanket shape -->
+    <rect x="14" y="34" width="66" height="38" rx="8" fill="#2D3748"/>
+    <!-- fold top edge wave -->
+    <path d="M14,44 C22,38 30,50 38,44 C46,38 54,50 62,44 C70,38 76,44 80,44" fill="none" stroke="#F9C74F" stroke-width="3.5" stroke-linecap="round"/>
+    <!-- cozy dot pattern -->
+    <circle cx="28" cy="58" r="3" fill="#F9C74F" opacity="0.7"/>
+    <circle cx="42" cy="62" r="3" fill="#F9C74F" opacity="0.7"/>
+    <circle cx="56" cy="58" r="3" fill="#F9C74F" opacity="0.7"/>
+    <circle cx="70" cy="62" r="3" fill="#F9C74F" opacity="0.7"/>
+    <text x="50" y="116" font-size="13" fill="#2D3748" text-anchor="middle">Blanket</text>
+  </g>
+
+  <!-- FIDGET TOY — blue -->
+  <g transform="translate(540,570)">
+    <circle cx="50" cy="50" r="50" fill="#5BA4CF"/>
+    <!-- fidget spinner: 3 rounded lobes -->
+    <circle cx="50" cy="26" r="12" fill="white"/>
+    <circle cx="29" cy="62" r="12" fill="white"/>
+    <circle cx="71" cy="62" r="12" fill="white"/>
+    <!-- center hub -->
+    <circle cx="50" cy="50" r="9" fill="#5BA4CF" stroke="white" stroke-width="3"/>
+    <circle cx="50" cy="50" r="4" fill="white"/>
+    <text x="50" y="116" font-size="12" fill="#2D3748" text-anchor="middle">Fidget Toy</text>
+  </g>
+
+  <!-- AUTISM CARD — green -->
+  <g transform="translate(700,570)">
+    <circle cx="50" cy="50" r="50" fill="#6BBF8E"/>
+    <!-- card shape -->
+    <rect x="12" y="26" width="64" height="44" rx="6" fill="white"/>
+    <!-- puzzle piece icon left -->
+    <path d="M22,36 L32,36 C32,36 34,32 36,36 L46,36 L46,46 C46,46 50,48 46,50 L46,60 L22,60 L22,50 C22,50 18,48 22,46 Z" fill="#6BBF8E"/>
+    <!-- text lines right side -->
+    <rect x="50" y="36" width="20" height="4" rx="2" fill="#6BBF8E"/>
+    <rect x="50" y="44" width="20" height="4" rx="2" fill="#6BBF8E"/>
+    <rect x="50" y="52" width="14" height="4" rx="2" fill="#6BBF8E"/>
+    <text x="50" y="116" font-size="11" fill="#2D3748" text-anchor="middle">Autism Card</text>
+  </g>
+
+  <!-- ═══════════════════ LEGEND ═══════════════════ -->
+  <text x="60" y="740" font-size="20" font-weight="bold" fill="#2E7CB8">Calm Skies Travel — Symbol Library v2.0</text>
+  <text x="60" y="762" font-size="13" fill="#718096">20 symbols · Circle backgrounds · Solid high-contrast icons · Created by IBM Bob</text>
+
+  <!-- Color key -->
+  <circle cx="80"  cy="796" r="16" fill="#5BA4CF"/>
+  <text   x="104" cy="800"  y="801" font-size="13" fill="#2D3748">Calm Sky Blue — primary (most common)</text>
+
+  <circle cx="80"  cy="830" r="16" fill="#6BBF8E"/>
+  <text   x="104" y="835" font-size="13" fill="#2D3748">Meadow Green — secondary</text>
+
+  <circle cx="80"  cy="864" r="16" fill="#F9C74F"/>
+  <text   x="104" y="869" font-size="13" fill="#2D3748">Sunflower Yellow — accent (heart, blanket, sunflower)</text>
+
+  <!-- Created by -->
+  <text x="60" y="920" font-size="12" fill="#718096">Created by IBM Bob · Calm Skies Travel · calmskiestravel.com</text>
+</svg>

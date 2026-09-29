@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Calm Skies Travel — Symbol Library v3.2</title>
+  <style>
+    body { background: #F7FBFF; font-family: Calibri, Arial, sans-serif; padding: 32px; }
+    h1   { color: #2E7CB8; font-size: 24px; margin-bottom: 4px; }
+    p.sub { color: #718096; font-size: 13px; margin-top: 0; margin-bottom: 32px; }
+    .grid { display: grid; grid-template-columns: repeat(5, 200px); gap: 24px; }
+    .symbol { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+    .symbol span { font-size: 13px; color: #2D3748; text-align: center; font-weight: 600; }
+    .symbol small { font-size: 11px; color: #718096; text-align: center; }
+    svg.badge { display: block; }
+    .footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid #e5e7eb;
+              font-size: 12px; color: #718096; }
+    h2 { color: #2E7CB8; font-size: 16px; margin-top: 40px; margin-bottom: 12px; }
+    .key { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 32px; }
+    .swatch { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #2D3748; }
+    .swatch-dot { width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; }
+    .fa-note { background: #f0f4ff; border: 1px solid #c7d7f9; border-radius: 6px;
+               padding: 12px 16px; font-size: 12px; color: #2D3748; margin-bottom: 24px;
+               max-width: 800px; }
+    /* ── PNG-based badge circles ── */
+    .png-badge {
+      position: relative;
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .png-badge img {
+      /* 25% padding = icon fills middle 50% of diameter */
+      width: 58%;
+      height: 58%;
+      object-fit: contain;
+      position: relative;
+      z-index: 1;
+    }
+    /* navy/dark PNG on colored background:
+       multiply makes white pixels transparent (white × color = color),
+       dark pixels stay dark and show through */
+    .png-badge img.multiply {
+      mix-blend-mode: multiply;
+    }
+    /* navy PNG → HDS green on blue circle.
+       DO NOT use brightness(0) — that turns white bg black too.
+       Instead: sepia shifts to warm tones, hue-rotate pushes to green,
+       saturate + brightness dials in to ~#006B3C, multiply removes white bg. */
+    .png-badge img.green-on-blue {
+      filter: sepia(1) hue-rotate(90deg) saturate(4) brightness(0.55);
+      mix-blend-mode: multiply;
+    }
+    /* white-on-green: invert flips navy→white and white→black.
+       screen blend makes black transparent, white shows on dark green. */
+    .png-badge img.white-on-green {
+      filter: invert(1);
+      mix-blend-mode: screen;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Calm Skies Travel — Symbol Library v3.2</h1>
+<p class="sub">Font Awesome 6 Free (Solid) icons · Circle badge format · 256px · Created by IBM Bob</p>
+
+<div class="fa-note">
+  <strong>Icon source:</strong> Font Awesome 6 Free — Solid style.
+  All paths are embedded as inline SVG from the official FA6 Free release.
+  Font Awesome Free is licensed under
+  <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank">CC BY 4.0</a>.
+  Per license: attribution required in site footer as "Icons: Font Awesome (CC BY 4.0)".
+</div>
+
+<h2>Color Key</h2>
+<div class="key">
+  <div class="swatch"><div class="swatch-dot" style="background:#5BA4CF"></div>Calm Sky Blue — primary (most common)</div>
+  <div class="swatch"><div class="swatch-dot" style="background:#006B3C"></div><span style="color:white;background:#006B3C;padding:1px 6px;border-radius:3px">HDS Green #006B3C</span> — Hidden Disabilities Sunflower green</div>
+  <div class="swatch"><div class="swatch-dot" style="background:#FDD835;border:1px solid #ccc"></div>HDS Yellow #FDD835 — Hidden Disabilities Sunflower yellow</div>
+</div>
+
+<div class="grid">
+
+  <!-- 1. PARENT — HDS green circle, black PNG via multiply -->
+  <div class="symbol">
+    <div class="png-badge" style="background:#006B3C;">
+      <img src="Parent.png" class="multiply" alt="Parent"/>
+    </div>
+    <span>Parent</span>
+    <small>Child.png · black on HDS green</small>
+  </div>
+
+  <!-- 2. CHILD — HDS green circle, black PNG via multiply, slightly smaller -->
+  <div class="symbol">
+    <div class="png-badge" style="background:#006B3C;">
+      <img src="Child.png" class="multiply" alt="Child" style="width:50%;height:50%;"/>
+    </div>
+    <span>Child</span>
+    <small>Child.png · black on HDS green</small>
+  </div>
+
+  <!-- 3. HOME — fa-house (blue) -->
+  <div class="symbol">
+    <svg class="badge" width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="100" cy="100" r="100" fill="#5BA4CF"/>
+      <!-- fa-house solid viewBox 576 512 -->
+      <g transform="translate(50,54) scale(0.174)">
+        <path fill="white" d="M575.8 255.5c0 18-15 32.1-32 32.1h-32l.7 160.2c0 2.7-.2 5.4-.5 8.1V472c0 22.1-17.9 40-40 40H456c-1.1 0-2.2 0-3.3-.1c-1.4 .1-2.8 .1-4.2 .1H416 392c-22.1 0-40-17.9-40-40V448 384c0-17.7-14.3-32-32-32H256c-17.7 0-32 14.3-32 32v64 24c0 22.1-17.9 40-40 40H160 128.1c-1.4 0-2.8 0-4.2-.1c-1.1 .1-2.2 .1-3.3 .1H80c-22.1 0-40-17.9-40-40V360c0-.9 0-1.9 .1-2.8V287.6H32c-18 0-32-14-32-32.1c0-9 3-17 10-24L266.4 8c7-7 15-8 22-8s15 2 21 7L564.8 231.5c8 7 12 15 11 24z"/>
+      </g>
+    </svg>
+    <span>Home</span>
+    <small>fa-house</small>
+  </div>
+
+  <!-- 4. AIRPORT — PlaneTakingOff.png · dark navy on HDS yellow -->
+  <div class="symbol">
+    <div class="png-badge" style="background:#FDD835;">
+      <img src="PlaneTakingOff.png" class="multiply" alt="Airport"/>
+    </div>
+    <span>Airport</span>
+    <small>PlaneTakingOff · navy on HDS yellow</small>
+  </div>
+
+  <!-- 5. PLANE — FA Plane.512.png · black on HDS yellow -->
+  <div class="symbol">
+    <div class="png-badge" style="background:#FDD835;">
+      <img src="Fa-Team-Fontawesome-FontAwesome-Plane.512.png" class="multiply" alt="Plane"/>
+    </div>
+    <span>Plane</span>
+    <small>FA Plane · black on HDS yellow</small>
+  </div>
+
+  <!-- 6. DESTINATION — fa-hotel (green) -->
+  <div class="symbol">
+    <svg class="badge" width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="100" cy="100" r="100" fill="#6BBF8E"/>
+      <!-- fa-hotel solid viewBox 512 512 -->
+      <g transform="translate(50,50) scale(0.195)">
+        <path fill="white" d="M0 32C0 14.3 14.3 0 32 0H480c17.7 0 32 14.3 32 32s-14.3 32-32 32V480c17.7 0 32 14.3 32 32s-14.3 32-32 32H304V464c0-26.5-21.5-48-48-48s-48 21.5-48 48v48H32c-17.7 0-32-14.3-32-32s14.3-32 32-32V64C14.3 64 0 49.7 0 32zm96 80v32c0 8.8 7.2 16 16 16h32c8.8 0 16-7.2 16-16V112c0-8.8-7.2-16-16-16H112c-8.8 0-16 7.2-16 16zm128 0v32c0 8.8 7.2 16 16 16h32c8.8 0 16-7.2 16-16V112c0-8.8-7.2-16-16-16H240c-8.8 0-16 7.2-16 16zm144-16c-8.8 0-16 7.2-16 16v32c0 8.8 7.2 16 16 16h32c8.8 0 16-7.2 16-16V112c0-8.8-7.2-16-16-16H368zM96 240v32c0 8.8 7.2 16 16 16h32c8.8 0 16-7.2 16-16V240c0-8.8-7.2-16-16-16H112c-8.8 0-16 7.2-16 16zm128-16c-8.8 0-16 7.2-16 16v32c0 8.8 7.2 16 16 16h32c8.8 0 16-7.2 16-16V240c0-8.8-7.2-16-16-16H240zm112 16v32c0 8.8 7.2 16 16 16h32c8.8 0 16-7.2 16-16V240c0-8.8-7.2-16-16-16H368c-8.8 0-16 7.2-16 16z"/>
+      </g>
+    </svg>
+    <span>Destination</span>
+    <small>fa-hotel</small>
+  </div>
+
+  <!-- 7. GOING HOME — fa-rotate-left (blue) -->
+  <div class="symbol">
+    <svg class="badge" width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="100" cy="100" r="100" fill="#5BA4CF"/>
+      <!-- fa-rotate-left solid viewBox 512 512 -->
+      <g transform="translate(50,50) scale(0.195)">
+        <path fill="white" d="M48.5 224H40c-13.3 0-24-10.7-24-24V72c0-9.7 5.8-18.5 14.8-22.2s19.3-1.7 26.2 5.2L98.6 96.6c87.6-86.5 228.7-86.2 315.8 1c87.5 87.5 87.5 229.3 0 316.8s-229.3 87.5-316.8 0c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0c62.5 62.5 163.8 62.5 226.3 0s62.5-163.8 0-226.3c-62.2-62.2-162.7-62.5-225.3-1L192 192c6.9 6.9 8.9 17.2 5.2 26.2s-12.5 14.8-22.2 14.8H48.5z"/>
+      </g>
+    </svg>
+    <span>Going Home</span>
+    <small>fa-rotate-left</small>
+  </div>
+
+  <!-- 8. SUNFLOWER LANYARD — fa-sun (HDS yellow #FDD835) -->
+  <div class="symbol">
+    <svg class="badge" width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="100" cy="100" r="100" fill="#FDD835"/>
+      <!-- fa-sun solid viewBox 512 512 — dark icon on bright yellow for contrast -->
+      <g transform="translate(50,50) scale(0.195)">
+        <path fill="#006B3C" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM352 256c0-53-43-96-96-96s-96 43-96 96s43 96 96 96s96-43 96-96z"/>
+      </g>
+    </svg>
+    <span>Sunflower Lanyard</span>
+    <small>fa-sun · HDS yellow + HDS green</small>
+  </div>
+
+  <!-- 9. TSA CARES — fa-phone (blue) -->
+  <div class="symbol">
+    <svg class="badge" width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="100" cy="100" r="100" fill="#5BA4CF"/>
+      <!-- fa-phone solid viewBox 512 512 -->
+      <g transform="translate(50,50) scale(0.195)">
+        <path fill="white" d="M164.9 24.6c-7.7-18.6-28-28.5-47.4-23.2l-88 24C12.1 30.2 0 46 0 64C0 311.4 200.6 512 448 512c18 0 33.8-12.1 38.6-29.5l24-88c5.3-19.4-4.6-39.7-23.2-47.4l-96-40c-16.3-6.8-35.2-2.1-46.3 11.6L304.7 368C234.3 334.7 177.3 277.7 144 207.3L193.3 167c13.7-11.2 18.4-30 11.6-46.3l-40-96z"/>
+      </g>
+    </svg>
+    <span>TSA Cares</span>
+    <small>fa-phone</small>
+  </div>
+
+  <!-- 10. DPNA CODE — fa-id-card (blue) -->
+  <div class="symbol">
+    <svg class="badge" width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="100" cy="100" r="100" fill="#5BA4CF"/>
+      <!-- fa-id-card solid viewBox 576 512 -->
+      <g transform="translate(50,62) scale(0.174)">
+        <path fill="white" d="M528 32H48C21.5 32 0 53.5 0 80v16h576V80c0-26.5-21.5-48-48-48zM0 432c0 26.5 21.5 48 48 48h480c26.5 0 48-21.5 48-48V128H0v304zm352-232c0-4.4 3.6-8 8-8h144c4.4 0 8 3.6 8 8v16c0 4.4-3.6 8-8 8H360c-4.4 0-8-3.6-8-8v-16zm0 64c0-4.4 3.6-8 8-8h144c4.4 0 8 3.6 8 8v16c0 4.4-3.6 8-8 8H360c-4.4 0-8-3.6-8-8v-16zm0 64c0-4.4 3.6-8 8-8h144c4.4 0 8 3.6 8 8v16c0 4.4-3.6 8-8 8H360c-4.4 0-8-3.6-8-8v-16zM176 192c35.3 0 64 28.7 64 64s-28.7 64-64 64-64-28.7-64-64 28.7-64 64-64zM67.1 396c-3.6-12.6 5.2-28 18.3-28h181.2c13.1 0 21.9 15.4 18.3 28C275.7 428.9 252.5 448 224 448H128c-28.5 0-51.7-19.1-60.9-52z"/>
+      </g>
+    </svg>
+    <span>DPNA Code</span>
+    <small>fa-id-card</small>
+  </div>
+
+  <!-- 11. SENSORY ROOM — fa-couch (green) -->
+  <div class="symbol">
+    <svg class="badge" width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="100" cy="100" r="100" fill="#6BBF8E"/>
+      <!-- fa-couch solid viewBox 640 512 -->
+      <g transform="translate(44,62) scale(0.175)">
+        <path fill="white" d="M64 160C64 89.3 121.3 32 192 32H448c70.7 0 128 57.3 128 128v33.6c-36.5 7.4-64 39.7-64 78.4v48H128V272c0-38.7-27.5-71-64-78.4V160zM544 272c0-26.5 21.5-48 48-48s48 21.5 48 48v48 32 48c0 17.7-14.3 32-32 32H576c-17.7 0-32-14.3-32-32V384H96v16c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32V368 320 272c0-26.5 21.5-48 48-48s48 21.5 48 48v48H544V272z"/>
+      </g>
+    </svg>
+    <span>Sensory Room</span>
+    <small>fa-couch</small>
+  </div>
+
+  <!-- 12. HEADPHONES — fa-headphones (blue) -->
+  <div class="symbol">
+    <svg class="badge" width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="100" cy="100" r="100" fill="#5BA4CF"/>
+      <!-- fa-headphones solid viewBox 512 512 -->
+      <g transform="translate(50,50) scale(0.195)">
+        <path fill="white" d="M256 80C149.9 80 62.4 159.4 49.6 262c9.4-3.8 19.6-6 30.4-6c26.5 0 48 21.5 48 48V432c0 26.5-21.5 48-48 48H80c-44.2 0-80-35.8-80-80V256C0 114.6 114.6 0 256 0S512 114.6 512 256V400c0 44.2-35.8 80-80 80H400c-26.5 0-48-21.5-48-48V304c0-26.5 21.5-48 48-48c10.8 0 21 2.2 30.4 6C417.6 159.4 362.1 80 256 80z"/>
+      </g>
+    </svg>
+    <span>Headphones</span>
+    <small>fa-headphones</small>
+  </div>
+
+  <!-- 13. HEART — fa-heart (yellow) -->
+  <div class="symbol">
+    <svg class="badge" width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="100" cy="100" r="100" fill="#FDD835"/>
+      <!-- fa-heart solid viewBox 512 512 — HDS green icon on HDS yellow -->
+      <g transform="translate(50,55) scale(0.195)">
+        <path fill="#006B3C" d="M47.6 300.4L228.3 469.1c7.5 7 17.4 10.9 27.7 10.9s20.2-3.9 27.7-10.9L464.4 300.4c30.4-28.3 47.6-68 47.6-109.5v-5.8c0-69.9-50.5-129.5-119.4-141C347 36.5 300.6 51.4 268 84L256 96 244 84c-32.6-32.6-79-47.5-124.6-39.9C50.5 55.6 0 115.2 0 185.1v5.8c0 41.5 17.2 81.2 47.6 109.5z"/>
+      </g>
+    </svg>
+    <span>Heart</span>
+    <small>fa-heart</small>
+  </div>
+
+  <!-- 14. SOCIAL STORY — fa-book-open (green) -->
+  <div class="symbol">
+    <svg class="badge" width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="100" cy="100" r="100" fill="#6BBF8E"/>
+      <!-- fa-book-open solid viewBox 576 512 -->
+      <g transform="translate(50,60) scale(0.174)">
+        <path fill="white" d="M249.6 471.5c10.8 3.8 22.4-4.1 22.4-15.5V74.6c0-4.2-1.6-8.4-5-11C247.4 52 202.4 32 144 32C93.5 32 46.3 45.3 18.1 56.1C6.8 60.5 0 71.7 0 83.8V464c0 11.9 12.8 20.2 24.1 16.5C55.6 468.1 93.2 448 144 448c35.8 0 79.1 14.6 105.6 23.5zm76.8 0C353.9 462.6 397.2 448 433 448c50.8 0 88.4 20.1 119.9 32.5C564.2 484.2 576 475.9 576 464V83.8c0-12.1-6.8-23.3-18.1-27.6C529.7 45.3 482.5 32 432 32c-58.4 0-103.4 20-123 41.6c-3.3 2.6-5 6.8-5 11V456c0 11.4 11.7 19.3 22.4 15.5z"/>
+      </g>
+    </svg>
+    <span>Social Story</span>
+    <small>fa-book-open</small>
+  </div>
+
+  <!-- 15. GO BAG — fa-bag-shopping (green) -->
+  <div class="symbol">
+    <svg class="badge" width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="100" cy="100" r="100" fill="#6BBF8E"/>
+      <!-- fa-bag-shopping solid viewBox 448 512 -->
+      <g transform="translate(56,50) scale(0.195)">
+        <path fill="white" d="M160 112c0-35.3 28.7-64 64-64s64 28.7 64 64v48H160V112zm-48 48H48c-26.5 0-48 21.5-48 48V416c0 53 43 96 96 96H352c53 0 96-43 96-96V208c0-26.5-21.5-48-48-48H336V112C336 50.1 285.9 0 224 0S112 50.1 112 112v48zm24 48a24 24 0 1 1 0 48 24 24 0 1 1 0-48zm152 24a24 24 0 1 1 48 0 24 24 0 1 1 -48 0z"/>
+      </g>
+    </svg>
+    <span>Go Bag</span>
+    <small>fa-bag-shopping</small>
+  </div>
+
+  <!-- 16. SHIP AHEAD — fa-truck-fast (blue) -->
+  <div class="symbol">
+    <svg class="badge" width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="100" cy="100" r="100" fill="#5BA4CF"/>
+      <!-- fa-truck-fast solid viewBox 576 512 -->
+      <g transform="translate(44,62) scale(0.188)">
+        <path fill="white" d="M0 112C0 85.5 21.5 64 48 64H272c26.5 0 48 21.5 48 48V304H0V112zM0 336H320v48c0 26.5-21.5 48-48 48H256c0 44.2-35.8 80-80 80s-80-35.8-80-80H80c-44.2 0-80-35.8-80-80V336zm176 80a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zM320 96h37.4c14.4 0 27.5 7.7 34.6 20.2l56.7 103.8c4.7 8.6 7.3 18.3 7.3 28.2V304H320V96zM480 416a48 48 0 1 0 0-96 48 48 0 1 0 0 96zm80-48H544c0-44.2-35.8-80-80-80s-80 35.8-80 80H352V256h216.5c12.4 0 23.5 7 29 18.1l14.5 29V368z"/>
+      </g>
+    </svg>
+    <span>Ship Ahead</span>
+    <small>fa-truck-fast</small>
+  </div>
+
+  <!-- 17. TSA PRECHECK — fa-star (HDS yellow) -->
+  <div class="symbol">
+    <svg class="badge" width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="100" cy="100" r="100" fill="#FDD835"/>
+      <!-- fa-star solid viewBox 576 512 -->
+      <g transform="translate(50,52) scale(0.174)">
+        <path fill="#2D3748" d="M316.9 18C311.6 7 300.4 0 288.1 0s-23.4 7-28.8 18L195 150.3 51.4 171.5c-12 1.8-22 10.2-25.7 21.7s-.7 24.2 7.9 32.7L137.8 329 113.2 474.7c-2 12 3 24.2 12.9 31.3s23 8 33.8 2.3l128.3-68.5 128.3 68.5c10.8 5.7 23.9 4.9 33.8-2.3s14.9-19.3 12.9-31.3L438.5 329 542.7 225.9c8.6-8.5 11.7-21.2 7.9-32.7s-13.7-19.9-25.7-21.7L381.2 150.3 316.9 18z"/>
+      </g>
+    </svg>
+    <span>TSA PreCheck</span>
+    <small>fa-star</small>
+  </div>
+
+  <!-- 18. AUTISM CARD — fa-address-card (blue) -->
+  <div class="symbol">
+    <svg class="badge" width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="100" cy="100" r="100" fill="#5BA4CF"/>
+      <!-- fa-address-card solid viewBox 576 512 -->
+      <g transform="translate(50,62) scale(0.174)">
+        <path fill="white" d="M64 32C28.7 32 0 60.7 0 96V416c0 35.3 28.7 64 64 64H512c35.3 0 64-28.7 64-64V96c0-35.3-28.7-64-64-64H64zm80 256h64c44.2 0 80 35.8 80 80c0 8.8-7.2 16-16 16H80c-8.8 0-16-7.2-16-16c0-44.2 35.8-80 80-80zm-32-96a64 64 0 1 1 128 0 64 64 0 1 1 -128 0zm256-32H496c8.8 0 16 7.2 16 16s-7.2 16-16 16H368c-8.8 0-16-7.2-16-16s7.2-16 16-16zm0 64H496c8.8 0 16 7.2 16 16s-7.2 16-16 16H368c-8.8 0-16-7.2-16-16s7.2-16 16-16zm0 64H496c8.8 0 16 7.2 16 16s-7.2 16-16 16H368c-8.8 0-16-7.2-16-16s7.2-16 16-16z"/>
+      </g>
+    </svg>
+    <span>Autism Card</span>
+    <small>fa-address-card</small>
+  </div>
+
+  <!-- 19. REHEARSAL — PlaneReheaser.png · white on HDS green -->
+  <div class="symbol">
+    <div class="png-badge" style="background:#006B3C;">
+      <img src="PlaneReheaser.png" class="white-on-green" alt="Rehearsal"/>
+    </div>
+    <span>Rehearsal</span>
+    <small>PlaneReheaser.png · white on HDS green</small>
+  </div>
+
+  <!-- 20. COMFORT / CALM — fa-shield-heart (HDS green) -->
+  <div class="symbol">
+    <svg class="badge" width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="100" cy="100" r="100" fill="#006B3C"/>
+      <!-- fa-shield-heart solid viewBox 512 512 -->
+      <g transform="translate(56,47) scale(0.195)">
+        <path fill="white" d="M269.4 2.9C265.2 1 260.7 0 256 0s-9.2 1-13.4 2.9L54.3 82.8c-22 9.3-38.4 31-38.3 57.2c.5 99.2 41.3 280.7 213.6 363.2c16.7 8 36.1 8 52.8 0C454.7 420.7 495.5 239.2 496 140c.1-26.2-16.3-47.9-38.3-57.2L269.4 2.9zM160.9 286.2c4.8 4 8.1 9.4 9.2 15.5c6.5-3.6 13.9-5.7 21.8-5.7c14.8 0 27.9 7.1 36.2 18.1c8.3-11 21.4-18.1 36.2-18.1c7.9 0 15.2 2.1 21.8 5.7c1.1-6.1 4.4-11.5 9.2-15.5c8.5-7 19.5-8 28.7-3.4c-1.4-6.9-3.1-13.8-5.2-20.7c-7.3-23.6-22.5-42.6-52.4-42.6c-5.2 0-10 .7-14.5 2L256 224l-15.9-1.9c-4.5-1.3-9.3-2-14.5-2c-29.9 0-45.1 19-52.4 42.6c-2.1 6.9-3.8 13.8-5.2 20.7c9.1-4.6 20.1-3.6 28.7 3.4l4.2 3.4z"/>
+      </g>
+    </svg>
+    <span>Comfort / Calm</span>
+    <small>fa-shield-heart</small>
+  </div>
+
+  <!-- 21. TWO VOICES — fa-hands-holding-child (Meadow Green #6BBF8E) -->
+  <!-- Exact path from Font Awesome Free 6.7.2 · CC BY 4.0 · viewBox 0 0 640 512 -->
+  <div class="symbol">
+    <svg class="badge" width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="100" cy="100" r="100" fill="#6BBF8E"/>
+      <!-- fa-hands-holding-child solid viewBox 0 0 640 512 · scale 0.1875 · translate(40,52) -->
+      <g transform="translate(40,52) scale(0.1875)">
+        <path fill="white" d="M320 0a40 40 0 1 1 0 80 40 40 0 1 1 0-80zm44.7 164.3L375.8 253c1.6 13.2-7.7 25.1-20.8 26.8s-25.1-7.7-26.8-20.8l-4.4-35-7.6 0-4.4 35c-1.6 13.2-13.6 22.5-26.8 20.8s-22.5-13.6-20.8-26.8l11.1-88.8L255.5 181c-10.1 8.6-25.3 7.3-33.8-2.8s-7.3-25.3 2.8-33.8l27.9-23.6C271.3 104.8 295.3 96 320 96s48.7 8.8 67.6 24.7l27.9 23.6c10.1 8.6 11.4 23.7 2.8 33.8s-23.7 11.4-33.8 2.8l-19.8-16.7zM40 64c22.1 0 40 17.9 40 40l0 40 0 80 0 40.2c0 17 6.7 33.3 18.7 45.3l51.1 51.1c8.3 8.3 21.3 9.6 31 3.1c12.9-8.6 14.7-26.9 3.7-37.8l-15.2-15.2-32-32c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l32 32 15.2 15.2c0 0 0 0 0 0l25.3 25.3c21 21 32.8 49.5 32.8 79.2l0 78.9c0 26.5-21.5 48-48 48l-66.7 0c-17 0-33.3-6.7-45.3-18.7L28.1 393.4C10.1 375.4 0 351 0 325.5L0 224l0-64 0-56C0 81.9 17.9 64 40 64zm560 0c22.1 0 40 17.9 40 40l0 56 0 64 0 101.5c0 25.5-10.1 49.9-28.1 67.9L512 493.3c-12 12-28.3 18.7-45.3 18.7L400 512c-26.5 0-48-21.5-48-48l0-78.9c0-29.7 11.8-58.2 32.8-79.2l25.3-25.3c0 0 0 0 0 0l15.2-15.2 32-32c12.5-12.5 32.8-12.5 45.3 0s12.5 32.8 0 45.3l-32 32-15.2 15.2c-11 11-9.2 29.2 3.7 37.8c9.7 6.5 22.7 5.2 31-3.1l51.1-51.1c12-12 18.7-28.3 18.7-45.3l0-40.2 0-80 0-40c0-22.1 17.9-40 40-40z"/>
+      </g>
+    </svg>
+    <span>Two Voices</span>
+    <small>fa-hands-holding-child · white on Meadow Green</small>
+  </div>
+
+</div>
+
+<div class="footer">
+  <strong>Icons:</strong> Font Awesome Free (CC BY 4.0) —
+  <a href="https://fontawesome.com" target="_blank">fontawesome.com</a> &nbsp;·&nbsp;
+  Created by IBM Bob &nbsp;·&nbsp; Calm Skies Travel &nbsp;·&nbsp;
+  <a href="https://calmskiestravel.com" target="_blank">calmskiestravel.com</a>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Story Builder — Test Suite | Calm Skies Travel</title>
+  <style>
+    /* ── Minimal test harness styles ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      font-size: 15px;
+      line-height: 1.65;
+      background: #F7FBFF;
+      color: #2D3748;
+      padding: 32px 24px 64px;
+      max-width: 860px;
+      margin: 0 auto;
+    }
+    h1 { font-size: 1.6rem; color: #2E7CB8; margin-bottom: 6px; }
+    .subtitle { color: #718096; font-size: 0.9rem; margin-bottom: 28px; }
+    h2 { font-size: 1.05rem; font-weight: 700; color: #2E7CB8;
+         margin: 28px 0 10px; border-bottom: 2px solid #C8DFF2; padding-bottom: 6px; }
+
+    /* Summary bar */
+    #summary {
+      display: flex; gap: 20px; flex-wrap: wrap; align-items: center;
+      background: #fff; border: 1px solid #C8DFF2; border-radius: 10px;
+      padding: 14px 20px; margin-bottom: 28px; box-shadow: 0 2px 8px rgba(45,55,72,.08);
+    }
+    .sum-item { font-size: 0.92rem; font-weight: 700; }
+    .sum-pass  { color: #006B3C; }
+    .sum-fail  { color: #C0392B; }
+    .sum-skip  { color: #718096; }
+    .sum-total { color: #2E7CB8; }
+    .sum-conf  { color: #2E7CB8; }
+
+    /* Individual test rows */
+    .test-row {
+      display: grid;
+      grid-template-columns: 28px 1fr auto;
+      align-items: start;
+      gap: 10px;
+      padding: 9px 14px;
+      border-radius: 6px;
+      margin-bottom: 5px;
+      font-size: 0.88rem;
+    }
+    .test-row.pass { background: #EBF7F0; }
+    .test-row.fail { background: #FDF0EF; }
+    .test-row.skip { background: #F3F4F6; }
+
+    .test-icon { font-size: 1rem; line-height: 1.5; }
+    .test-name { font-weight: 600; color: #2D3748; }
+    .test-detail { font-size: 0.82rem; color: #718096; margin-top: 3px; font-weight: 400; }
+    .test-badge {
+      font-size: 0.75rem; font-weight: 700; padding: 2px 8px;
+      border-radius: 4px; white-space: nowrap; align-self: center;
+    }
+    .test-badge.pass { background: #006B3C; color: #fff; }
+    .test-badge.fail { background: #C0392B; color: #fff; }
+    .test-badge.skip { background: #718096; color: #fff; }
+
+    .footer-note {
+      margin-top: 40px; font-size: 0.8rem; color: #718096;
+      border-top: 1px solid #C8DFF2; padding-top: 16px;
+    }
+
+    /* Hidden fixture DOM */
+    #fixture { display: none; }
+  </style>
+</head>
+<body>
+
+<h1>Story Builder — Test Suite</h1>
+<p class="subtitle">Calm Skies Travel &nbsp;·&nbsp; Created by IBM Bob &nbsp;·&nbsp; Zero external dependencies</p>
+
+<!-- Live summary bar (populated by JS) -->
+<div id="summary">
+  <span class="sum-item sum-total">Total: <span id="s-total">–</span></span>
+  <span class="sum-item sum-pass">✅ Passed: <span id="s-pass">–</span></span>
+  <span class="sum-item sum-fail">❌ Failed: <span id="s-fail">–</span></span>
+  <span class="sum-item sum-skip">⏭ Skipped: <span id="s-skip">–</span></span>
+  <span class="sum-item sum-conf">Confidence: <span id="s-conf">–</span></span>
+</div>
+
+<div id="results"></div>
+
+<!-- Hidden DOM fixture — simulates the Story Builder form fields -->
+<div id="fixture">
+  <input id="sb-name"        type="text" value=""/>
+  <input id="sb-visiting"    type="text" value=""/>
+  <input id="sb-destination" type="text" value=""/>
+  <input id="sb-comfort"     type="text" value=""/>
+  <input id="sb-calm"        type="text" value=""/>
+  <input id="sb-detail"      type="text" value=""/>
+</div>
+
+<!-- Load the module under test -->
+<script src="storybuilder.js"></script>
+
+<script>
+'use strict';
+
+/* ══════════════════════════════════════════════════════════════════
+   TINY TEST HARNESS
+══════════════════════════════════════════════════════════════════ */
+var results = [];
+
+function pass(name, detail) { results.push({ status: 'pass', name: name, detail: detail || '' }); }
+function fail(name, detail) { results.push({ status: 'fail', name: name, detail: detail || '' }); }
+function skip(name, detail) { results.push({ status: 'skip', name: name, detail: detail || '' }); }
+
+function assertEqual(actual, expected, label) {
+  if (actual === expected) { return true; }
+  throw new Error(label + ' — expected ' + JSON.stringify(expected) + ', got ' + JSON.stringify(actual));
+}
+function assertTrue(value, label) {
+  if (value) { return true; }
+  throw new Error(label + ' — expected truthy, got ' + JSON.stringify(value));
+}
+function assertFalse(value, label) {
+  if (!value) { return true; }
+  throw new Error(label + ' — expected falsy, got ' + JSON.stringify(value));
+}
+function assertContains(str, sub, label) {
+  if (typeof str === 'string' && str.indexOf(sub) !== -1) { return true; }
+  throw new Error(label + ' — expected "' + str + '" to contain "' + sub + '"');
+}
+
+/** Run a single test case; catch any thrown Error as a failure. */
+function test(name, fn) {
+  try {
+    fn();
+    pass(name);
+  } catch (e) {
+    fail(name, e.message);
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   HELPERS — DOM fixture manipulation
+══════════════════════════════════════════════════════════════════ */
+
+/** Set a fixture field value. */
+function setField(id, value) {
+  var el = document.getElementById(id);
+  if (el) { el.value = value; }
+}
+
+/** Clear all fixture fields. */
+function clearAllFields() {
+  ['sb-name','sb-visiting','sb-destination','sb-comfort','sb-calm','sb-detail']
+    .forEach(function (id) { setField(id, ''); });
+}
+
+/** Fill all fixture fields with a standard set of test values. */
+function fillAllFields() {
+  setField('sb-name',        'Maya');
+  setField('sb-visiting',    'Grandma');
+  setField('sb-destination', 'Florida');
+  setField('sb-comfort',     'blue blanket');
+  setField('sb-calm',        'squeeze my fidget');
+  setField('sb-detail',      'swimming in the pool');
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   GROUP 1 — SCHEMA CONSTANTS
+══════════════════════════════════════════════════════════════════ */
+document.getElementById('results').insertAdjacentHTML('beforeend',
+  '<h2>Group 1 — Schema Constants</h2>');
+
+test('SCHEMA_VERSION is 1', function () {
+  assertEqual(SCHEMA_VERSION, 1, 'SCHEMA_VERSION');
+});
+
+test('FIELD_IDS contains all 6 expected IDs', function () {
+  var expected = ['sb-name','sb-visiting','sb-destination','sb-comfort','sb-calm','sb-detail'];
+  assertEqual(FIELD_IDS.length, 6, 'FIELD_IDS length');
+  expected.forEach(function (id) {
+    assertTrue(FIELD_IDS.indexOf(id) !== -1, 'FIELD_IDS contains ' + id);
+  });
+});
+
+test('FIELD_MAP contains correct key→value pairs', function () {
+  assertEqual(FIELD_MAP['sb-name'],        'name',        'sb-name mapping');
+  assertEqual(FIELD_MAP['sb-visiting'],    'visiting',    'sb-visiting mapping');
+  assertEqual(FIELD_MAP['sb-destination'], 'destination', 'sb-destination mapping');
+  assertEqual(FIELD_MAP['sb-comfort'],     'comfort',     'sb-comfort mapping');
+  assertEqual(FIELD_MAP['sb-calm'],        'calm',        'sb-calm mapping');
+  assertEqual(FIELD_MAP['sb-detail'],      'detail',      'sb-detail mapping');
+});
+
+test('FIELD_MAP has exactly 6 entries', function () {
+  assertEqual(Object.keys(FIELD_MAP).length, 6, 'FIELD_MAP length');
+});
+
+/* ══════════════════════════════════════════════════════════════════
+   GROUP 2 — getFieldValue
+══════════════════════════════════════════════════════════════════ */
+document.getElementById('results').insertAdjacentHTML('beforeend',
+  '<h2>Group 2 — getFieldValue</h2>');
+
+test('getFieldValue returns trimmed value from a real DOM element', function () {
+  setField('sb-name', '  Maya  ');
+  assertEqual(getFieldValue('sb-name'), 'Maya', 'trimmed value');
+  clearAllFields();
+});
+
+test('getFieldValue returns empty string for empty field', function () {
+  clearAllFields();
+  assertEqual(getFieldValue('sb-name'), '', 'empty field');
+});
+
+test('getFieldValue returns empty string for unknown element ID', function () {
+  assertEqual(getFieldValue('no-such-id'), '', 'unknown ID');
+});
+
+test('getFieldValue works with injected domLookup', function () {
+  var fakeDom = {
+    getElementById: function (id) {
+      if (id === 'sb-name') { return { value: 'Alex' }; }
+      return null;
+    }
+  };
+  assertEqual(getFieldValue('sb-name', fakeDom), 'Alex', 'injected dom');
+});
+
+test('getFieldValue returns empty string when injected dom has no element', function () {
+  var fakeDom = { getElementById: function () { return null; } };
+  assertEqual(getFieldValue('sb-name', fakeDom), '', 'null element');
+});
+
+/* ══════════════════════════════════════════════════════════════════
+   GROUP 3 — collectStoryData
+══════════════════════════════════════════════════════════════════ */
+document.getElementById('results').insertAdjacentHTML('beforeend',
+  '<h2>Group 3 — collectStoryData</h2>');
+
+test('collectStoryData returns an object', function () {
+  clearAllFields();
+  var d = collectStoryData();
+  assertTrue(typeof d === 'object' && d !== null, 'result is object');
+});
+
+test('collectStoryData includes schemaVersion === 1', function () {
+  var d = collectStoryData();
+  assertEqual(d.schemaVersion, 1, 'schemaVersion');
+});
+
+test('collectStoryData includes savedAt as ISO-8601 string', function () {
+  var d = collectStoryData();
+  assertTrue(typeof d.savedAt === 'string', 'savedAt is string');
+  assertTrue(d.savedAt.length > 10, 'savedAt has length');
+  /* ISO-8601 dates contain 'T' as date/time separator */
+  assertTrue(d.savedAt.indexOf('T') !== -1, 'savedAt contains T');
+});
+
+test('collectStoryData includes all six field keys in .fields', function () {
+  var d = collectStoryData();
+  var expected = ['name','visiting','destination','comfort','calm','detail'];
+  expected.forEach(function (k) {
+    assertTrue(Object.prototype.hasOwnProperty.call(d.fields, k), 'has field ' + k);
+  });
+});
+
+test('collectStoryData reflects filled form values', function () {
+  fillAllFields();
+  var d = collectStoryData();
+  assertEqual(d.fields.name,        'Maya',                 'name');
+  assertEqual(d.fields.visiting,    'Grandma',              'visiting');
+  assertEqual(d.fields.destination, 'Florida',              'destination');
+  assertEqual(d.fields.comfort,     'blue blanket',         'comfort');
+  assertEqual(d.fields.calm,        'squeeze my fidget',    'calm');
+  assertEqual(d.fields.detail,      'swimming in the pool', 'detail');
+  clearAllFields();
+});
+
+test('collectStoryData reflects empty fields as empty strings', function () {
+  clearAllFields();
+  var d = collectStoryData();
+  assertEqual(d.fields.name,        '', 'name empty');
+  assertEqual(d.fields.destination, '', 'destination empty');
+});
+
+test('collectStoryData trims whitespace from field values', function () {
+  setField('sb-name', '  Alex  ');
+  var d = collectStoryData();
+  assertEqual(d.fields.name, 'Alex', 'trimmed');
+  clearAllFields();
+});
+
+/* ══════════════════════════════════════════════════════════════════
+   GROUP 4 — validateStoryData
+══════════════════════════════════════════════════════════════════ */
+document.getElementById('results').insertAdjacentHTML('beforeend',
+  '<h2>Group 4 — validateStoryData</h2>');
+
+test('validateStoryData accepts a valid payload', function () {
+  var good = {
+    schemaVersion: 1,
+    savedAt: '2024-01-01T00:00:00.000Z',
+    fields: { name:'Maya', visiting:'Grandma', destination:'Florida',
+              comfort:'blanket', calm:'fidget', detail:'swimming' }
+  };
+  var r = validateStoryData(good);
+  assertTrue(r.valid, 'valid is true');
+  assertEqual(r.reason, 'ok', 'reason is ok');
+});
+
+test('validateStoryData rejects null', function () {
+  var r = validateStoryData(null);
+  assertFalse(r.valid, 'null rejected');
+});
+
+test('validateStoryData rejects undefined', function () {
+  var r = validateStoryData(undefined);
+  assertFalse(r.valid, 'undefined rejected');
+});
+
+test('validateStoryData rejects an array', function () {
+  var r = validateStoryData([]);
+  assertFalse(r.valid, 'array rejected');
+});
+
+test('validateStoryData rejects a string', function () {
+  var r = validateStoryData('hello');
+  assertFalse(r.valid, 'string rejected');
+});
+
+test('validateStoryData rejects object missing "fields" key', function () {
+  var r = validateStoryData({ schemaVersion: 1 });
+  assertFalse(r.valid, 'no fields key rejected');
+  assertContains(r.reason, 'fields', 'reason mentions fields');
+});
+
+test('validateStoryData rejects object where fields is null', function () {
+  var r = validateStoryData({ fields: null });
+  assertFalse(r.valid, 'null fields rejected');
+});
+
+test('validateStoryData rejects object where fields is an array', function () {
+  var r = validateStoryData({ fields: [] });
+  assertFalse(r.valid, 'array fields rejected');
+});
+
+test('validateStoryData rejects missing individual field (name)', function () {
+  var r = validateStoryData({ fields: { visiting:'G', destination:'F', comfort:'B', calm:'C', detail:'D' }});
+  assertFalse(r.valid, 'missing name rejected');
+  assertContains(r.reason, 'name', 'reason mentions name');
+});
+
+test('validateStoryData rejects missing individual field (destination)', function () {
+  var r = validateStoryData({ fields: { name:'M', visiting:'G', comfort:'B', calm:'C', detail:'D' }});
+  assertFalse(r.valid, 'missing destination rejected');
+  assertContains(r.reason, 'destination', 'reason mentions destination');
+});
+
+test('validateStoryData rejects non-string field value (number)', function () {
+  var r = validateStoryData({ fields: { name:42, visiting:'G', destination:'F', comfort:'B', calm:'C', detail:'D' }});
+  assertFalse(r.valid, 'number field rejected');
+});
+
+test('validateStoryData rejects non-string field value (null)', function () {
+  var r = validateStoryData({ fields: { name:null, visiting:'G', destination:'F', comfort:'B', calm:'C', detail:'D' }});
+  assertFalse(r.valid, 'null field value rejected');
+});
+
+test('validateStoryData accepts empty string field values', function () {
+  var r = validateStoryData({ fields: { name:'', visiting:'', destination:'', comfort:'', calm:'', detail:'' }});
+  assertTrue(r.valid, 'empty strings accepted — fields present but blank is valid');
+});
+
+/* ══════════════════════════════════════════════════════════════════
+   GROUP 5 — serialiseStoryData / parseStoryJSON
+══════════════════════════════════════════════════════════════════ */
+document.getElementById('results').insertAdjacentHTML('beforeend',
+  '<h2>Group 5 — serialiseStoryData &amp; parseStoryJSON</h2>');
+
+test('serialiseStoryData returns a string', function () {
+  fillAllFields();
+  var d = collectStoryData();
+  assertTrue(typeof serialiseStoryData(d) === 'string', 'is string');
+  clearAllFields();
+});
+
+test('serialised JSON is parseable back to the original object', function () {
+  fillAllFields();
+  var d      = collectStoryData();
+  var json   = serialiseStoryData(d);
+  var parsed = JSON.parse(json);
+  assertEqual(parsed.fields.name,        'Maya',                 'name round-trips');
+  assertEqual(parsed.fields.destination, 'Florida',              'destination round-trips');
+  assertEqual(parsed.fields.detail,      'swimming in the pool', 'detail round-trips');
+  clearAllFields();
+});
+
+test('serialised JSON contains schemaVersion key', function () {
+  var d = collectStoryData();
+  assertContains(serialiseStoryData(d), '"schemaVersion"', 'schemaVersion in JSON');
+});
+
+test('serialised JSON contains savedAt key', function () {
+  var d = collectStoryData();
+  assertContains(serialiseStoryData(d), '"savedAt"', 'savedAt in JSON');
+});
+
+test('parseStoryJSON returns object for valid JSON string', function () {
+  var parsed = parseStoryJSON('{"schemaVersion":1,"fields":{}}');
+  assertTrue(parsed !== null && typeof parsed === 'object', 'parsed is object');
+});
+
+test('parseStoryJSON returns null for invalid JSON', function () {
+  var parsed = parseStoryJSON('{bad json}');
+  assertEqual(parsed, null, 'null for bad JSON');
+});
+
+test('parseStoryJSON returns null for empty string', function () {
+  var parsed = parseStoryJSON('');
+  assertEqual(parsed, null, 'null for empty string');
+});
+
+test('parseStoryJSON returns null for null input', function () {
+  var parsed = parseStoryJSON(null);
+  assertEqual(parsed, null, 'null for null input');
+});
+
+/* ══════════════════════════════════════════════════════════════════
+   GROUP 6 — populateStoryFields
+══════════════════════════════════════════════════════════════════ */
+document.getElementById('results').insertAdjacentHTML('beforeend',
+  '<h2>Group 6 — populateStoryFields</h2>');
+
+test('populateStoryFields returns success:true for valid data', function () {
+  clearAllFields();
+  var data = {
+    fields: { name:'Jordan', visiting:'Uncle Bob', destination:'Chicago',
+              comfort:'stuffed lion', calm:'hum my song', detail:'deep-dish pizza' }
+  };
+  var r = populateStoryFields(data);
+  assertTrue(r.success, 'success is true');
+  assertEqual(r.reason, 'ok', 'reason is ok');
+  clearAllFields();
+});
+
+test('populateStoryFields sets DOM field values correctly', function () {
+  clearAllFields();
+  var data = {
+    fields: { name:'Jordan', visiting:'Uncle Bob', destination:'Chicago',
+              comfort:'stuffed lion', calm:'hum my song', detail:'deep-dish pizza' }
+  };
+  populateStoryFields(data);
+  assertEqual(document.getElementById('sb-name').value,        'Jordan',       'name set');
+  assertEqual(document.getElementById('sb-visiting').value,    'Uncle Bob',    'visiting set');
+  assertEqual(document.getElementById('sb-destination').value, 'Chicago',      'destination set');
+  assertEqual(document.getElementById('sb-comfort').value,     'stuffed lion', 'comfort set');
+  assertEqual(document.getElementById('sb-calm').value,        'hum my song',  'calm set');
+  assertEqual(document.getElementById('sb-detail').value,      'deep-dish pizza', 'detail set');
+  clearAllFields();
+});
+
+test('populateStoryFields returns failure for null data', function () {
+  var r = populateStoryFields(null);
+  assertFalse(r.success, 'null data fails');
+});
+
+test('populateStoryFields returns failure for data without fields', function () {
+  var r = populateStoryFields({ schemaVersion: 1 });
+  assertFalse(r.success, 'no fields fails');
+});
+
+test('populateStoryFields calls the updateFn callback', function () {
+  clearAllFields();
+  var called = false;
+  var data = {
+    fields: { name:'Sam', visiting:'Dad', destination:'NYC',
+              comfort:'bear', calm:'count', detail:'pizza' }
+  };
+  populateStoryFields(data, document, function () { called = true; });
+  assertTrue(called, 'updateFn was called');
+  clearAllFields();
+});
+
+test('populateStoryFields uses injected domLookup', function () {
+  var written = {};
+  var fakeDom = {
+    getElementById: function (id) {
+      return {
+        set value(v) { written[id] = v; },
+        get value() { return written[id] || ''; }
+      };
+    }
+  };
+  var data = {
+    fields: { name:'Test', visiting:'V', destination:'D',
+              comfort:'C', calm:'Ca', detail:'De' }
+  };
+  var r = populateStoryFields(data, fakeDom);
+  assertTrue(r.success, 'success with fake dom');
+  assertEqual(written['sb-name'], 'Test', 'fake dom name was written');
+});
+
+test('populateStoryFields works with empty string field values', function () {
+  fillAllFields();
+  var data = {
+    fields: { name:'', visiting:'', destination:'', comfort:'', calm:'', detail:'' }
+  };
+  var r = populateStoryFields(data);
+  assertTrue(r.success, 'empty fields success');
+  assertEqual(document.getElementById('sb-name').value, '', 'name cleared');
+  clearAllFields();
+});
+
+/* ══════════════════════════════════════════════════════════════════
+   GROUP 7 — ROUND-TRIP (save → parse → validate → populate)
+══════════════════════════════════════════════════════════════════ */
+document.getElementById('results').insertAdjacentHTML('beforeend',
+  '<h2>Group 7 — Full Round-Trip (Save → Serialise → Parse → Populate)</h2>');
+
+test('round-trip: data collected from form survives JSON serialise + parse + validate', function () {
+  fillAllFields();
+  var data   = collectStoryData();
+  var json   = serialiseStoryData(data);
+  var parsed = parseStoryJSON(json);
+  var v      = validateStoryData(parsed);
+  assertTrue(v.valid, 'round-trip validates');
+  clearAllFields();
+});
+
+test('round-trip: populate after serialise restores all six field values', function () {
+  fillAllFields();
+  var data   = collectStoryData();
+  var json   = serialiseStoryData(data);
+  clearAllFields(); /* wipe fields before restoring */
+  var parsed = parseStoryJSON(json);
+  var r      = populateStoryFields(parsed);
+  assertTrue(r.success, 'populate succeeds');
+  assertEqual(document.getElementById('sb-name').value,        'Maya',                 'name restored');
+  assertEqual(document.getElementById('sb-visiting').value,    'Grandma',              'visiting restored');
+  assertEqual(document.getElementById('sb-destination').value, 'Florida',              'destination restored');
+  assertEqual(document.getElementById('sb-comfort').value,     'blue blanket',         'comfort restored');
+  assertEqual(document.getElementById('sb-calm').value,        'squeeze my fidget',    'calm restored');
+  assertEqual(document.getElementById('sb-detail').value,      'swimming in the pool', 'detail restored');
+  clearAllFields();
+});
+
+test('round-trip: roundTripStoryData helper returns validated object', function () {
+  fillAllFields();
+  var result = roundTripStoryData();
+  assertTrue(result !== null, 'result is not null');
+  assertTrue(typeof result === 'object', 'result is object');
+  assertEqual(result.fields.name, 'Maya', 'name in result');
+  clearAllFields();
+});
+
+test('round-trip: partial fields (some empty) still produce valid JSON', function () {
+  clearAllFields();
+  setField('sb-name',        'Sam');
+  setField('sb-destination', 'Boston');
+  var data   = collectStoryData();
+  var json   = serialiseStoryData(data);
+  var parsed = parseStoryJSON(json);
+  var v      = validateStoryData(parsed);
+  assertTrue(v.valid, 'partial fill validates');
+  assertEqual(parsed.fields.name,        'Sam',    'name persisted');
+  assertEqual(parsed.fields.destination, 'Boston', 'destination persisted');
+  assertEqual(parsed.fields.visiting,    '',       'visiting is empty string');
+  clearAllFields();
+});
+
+test('round-trip: special characters in fields survive serialise + parse', function () {
+  clearAllFields();
+  setField('sb-name',        "O'Brien");
+  setField('sb-detail',      'Café & "spa"');
+  setField('sb-visiting',    'Abuela');
+  setField('sb-destination', 'Miami');
+  setField('sb-comfort',     'blanket');
+  setField('sb-calm',        'breathe');
+  var data   = collectStoryData();
+  var json   = serialiseStoryData(data);
+  var parsed = parseStoryJSON(json);
+  assertEqual(parsed.fields.name,   "O'Brien",    'apostrophe survives');
+  assertEqual(parsed.fields.detail, 'Café & "spa"', 'accented chars and quotes survive');
+  clearAllFields();
+});
+
+test('round-trip: Unicode / emoji in fields survive serialise + parse', function () {
+  clearAllFields();
+  setField('sb-name',        'Zoë ✈');
+  setField('sb-visiting',    'Abuela 💙');
+  setField('sb-destination', 'Puerto Rico');
+  setField('sb-comfort',     'heart plushie 🧸');
+  setField('sb-calm',        'deep breaths');
+  setField('sb-detail',      'beach');
+  var data   = collectStoryData();
+  var json   = serialiseStoryData(data);
+  var parsed = parseStoryJSON(json);
+  assertEqual(parsed.fields.name,    'Zoë ✈',       'emoji in name survives');
+  assertEqual(parsed.fields.visiting,'Abuela 💙',   'emoji in visiting survives');
+  clearAllFields();
+});
+
+test('round-trip: very long field values survive serialise + parse', function () {
+  clearAllFields();
+  var longVal = new Array(1001).join('a'); /* 1000 'a' chars */
+  setField('sb-name',        longVal);
+  setField('sb-visiting',    'Grandpa');
+  setField('sb-destination', 'Seattle');
+  setField('sb-comfort',     'blanket');
+  setField('sb-calm',        'hum');
+  setField('sb-detail',      'rain');
+  var data   = collectStoryData();
+  var json   = serialiseStoryData(data);
+  var parsed = parseStoryJSON(json);
+  assertEqual(parsed.fields.name.length, 1000, '1000-char name survives');
+  clearAllFields();
+});
+
+/* ══════════════════════════════════════════════════════════════════
+   GROUP 8 — EDGE CASES AND SECURITY
+══════════════════════════════════════════════════════════════════ */
+document.getElementById('results').insertAdjacentHTML('beforeend',
+  '<h2>Group 8 — Edge Cases &amp; Security</h2>');
+
+test('field containing HTML tags is stored and retrieved as plain text (no XSS risk in JSON)', function () {
+  clearAllFields();
+  setField('sb-name', '<script>alert(1)</script>');
+  setField('sb-visiting',    'G');
+  setField('sb-destination', 'D');
+  setField('sb-comfort',     'C');
+  setField('sb-calm',        'Ca');
+  setField('sb-detail',      'De');
+  var data = collectStoryData();
+  assertEqual(data.fields.name, '<script>alert(1)</script>', 'stored verbatim as string');
+  /* The JSON contains the angle brackets as unicode-escaped or as-is; either is safe in JSON */
+  var json = serialiseStoryData(data);
+  var parsed = parseStoryJSON(json);
+  assertEqual(parsed.fields.name, '<script>alert(1)</script>', 'round-trips as plain string');
+  clearAllFields();
+});
+
+test('data with extra unknown keys in payload still validates', function () {
+  var data = {
+    schemaVersion: 1,
+    savedAt: '2024-01-01T00:00:00.000Z',
+    extraKey: 'extra value that should be ignored',
+    fields: { name:'M', visiting:'G', destination:'F', comfort:'B', calm:'C', detail:'D' }
+  };
+  var v = validateStoryData(data);
+  assertTrue(v.valid, 'extra keys accepted');
+});
+
+test('data with extra unknown keys in fields still validates', function () {
+  var data = {
+    fields: { name:'M', visiting:'G', destination:'F', comfort:'B', calm:'C', detail:'D',
+              extraField: 'should be ignored' }
+  };
+  var v = validateStoryData(data);
+  assertTrue(v.valid, 'extra field keys accepted');
+});
+
+test('parseStoryJSON handles numeric input gracefully', function () {
+  var parsed = parseStoryJSON(42);
+  /* 42 is valid JSON — should parse to the number 42, not throw */
+  assertTrue(parsed === 42 || parsed === null, 'numeric input handled');
+});
+
+test('validateStoryData rejects a number at root', function () {
+  var r = validateStoryData(42);
+  assertFalse(r.valid, 'number at root rejected');
+});
+
+/* ══════════════════════════════════════════════════════════════════
+   GROUP 9 — PRIVACY GUARANTEE (no network calls)
+   These tests verify the module uses no fetch/XMLHttpRequest.
+══════════════════════════════════════════════════════════════════ */
+document.getElementById('results').insertAdjacentHTML('beforeend',
+  '<h2>Group 9 — Privacy Guarantee (no network calls)</h2>');
+
+test('collectStoryData makes no network requests (fetch not called)', function () {
+  var fetchCalled = false;
+  var origFetch = window.fetch;
+  window.fetch = function () { fetchCalled = true; return Promise.resolve(); };
+  fillAllFields();
+  collectStoryData();
+  window.fetch = origFetch;
+  assertFalse(fetchCalled, 'fetch was not called');
+  clearAllFields();
+});
+
+test('serialiseStoryData makes no network requests', function () {
+  var fetchCalled = false;
+  var origFetch = window.fetch;
+  window.fetch = function () { fetchCalled = true; return Promise.resolve(); };
+  serialiseStoryData(collectStoryData());
+  window.fetch = origFetch;
+  assertFalse(fetchCalled, 'fetch was not called');
+});
+
+test('populateStoryFields makes no network requests', function () {
+  var fetchCalled = false;
+  var origFetch = window.fetch;
+  window.fetch = function () { fetchCalled = true; return Promise.resolve(); };
+  var data = { fields: { name:'M', visiting:'G', destination:'F', comfort:'B', calm:'C', detail:'D' }};
+  populateStoryFields(data);
+  window.fetch = origFetch;
+  assertFalse(fetchCalled, 'fetch was not called');
+  clearAllFields();
+});
+
+test('validateStoryData makes no network requests', function () {
+  var fetchCalled = false;
+  var origFetch = window.fetch;
+  window.fetch = function () { fetchCalled = true; return Promise.resolve(); };
+  validateStoryData({ fields: { name:'M', visiting:'G', destination:'F', comfort:'B', calm:'C', detail:'D' }});
+  window.fetch = origFetch;
+  assertFalse(fetchCalled, 'fetch was not called');
+});
+
+/* ══════════════════════════════════════════════════════════════════
+   RENDER RESULTS
+══════════════════════════════════════════════════════════════════ */
+(function renderResults() {
+  var container = document.getElementById('results');
+  var passed = 0, failed = 0, skipped = 0;
+
+  results.forEach(function (r) {
+    if (r.status === 'pass')  { passed++;  }
+    if (r.status === 'fail')  { failed++;  }
+    if (r.status === 'skip')  { skipped++; }
+
+    var icon  = r.status === 'pass' ? '✅' : r.status === 'fail' ? '❌' : '⏭';
+    var badge = '<span class="test-badge ' + r.status + '">' + r.status.toUpperCase() + '</span>';
+    var detail= r.detail
+      ? '<div class="test-detail">' + r.detail.replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</div>'
+      : '';
+
+    container.insertAdjacentHTML('beforeend',
+      '<div class="test-row ' + r.status + '">' +
+        '<span class="test-icon">' + icon + '</span>' +
+        '<div><span class="test-name">' + r.name + '</span>' + detail + '</div>' +
+        badge +
+      '</div>');
+  });
+
+  var total      = passed + failed + skipped;
+  var applicable = passed + failed;
+  var confidence = applicable > 0 ? ((passed / applicable) * 100).toFixed(1) : '—';
+
+  document.getElementById('s-total').textContent = total;
+  document.getElementById('s-pass').textContent  = passed;
+  document.getElementById('s-fail').textContent  = failed;
+  document.getElementById('s-skip').textContent  = skipped;
+  document.getElementById('s-conf').textContent  = confidence + '%';
+
+  /* Colour the summary bar based on confidence */
+  var confEl = document.getElementById('s-conf').parentElement;
+  if (failed === 0)          { confEl.style.color = '#006B3C'; }
+  else if (parseFloat(confidence) >= 99) { confEl.style.color = '#2E7CB8'; }
+  else                       { confEl.style.color = '#C0392B'; }
+})();
+</script>
+
+<div class="footer-note">
+  <p>Calm Skies Travel — Story Builder Test Suite &nbsp;·&nbsp; Created by IBM Bob</p>
+  <p>All tests run in the browser with zero external dependencies.
+     Open this file in any modern browser to execute the suite.
+     Data stays on this device — no network calls are made.</p>
+</div>
+
+</body>
+</html>

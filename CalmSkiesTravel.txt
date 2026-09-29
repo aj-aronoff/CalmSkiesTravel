@@ -1,0 +1,43 @@
+Always ask clarifying questions until you are 95% certain
+
+1. The backstory: see file BackStory.txt and LaguardiaNightmare.png
+2. Website name: Calm Skies Travel, with the tagline "Safe travels, calm skies". I own calmskiestravel.com, .info and .cloud.
+3. We are going to build a website for autistic children and parents, with the approach, that I have learned for successful travel.
+4. The website will have "One guide, two voices": Every topic has a  checklists. A) One for the parents B) It has a Child section in simple, first-person words that can be tailored to each child. The child always comes first: the guide adapts to them, not the other way around.
+4. Social stories that child and parent can customize (the heart of the project): The Story Builder turns in the child's name, where they're going, who they'll see and what step-by-step social story to read together, print or laminate. This is the most important feature.
+5. Hello and Thank you page. A page with somem easy multiple choices, saying hello to the people being visted or the hotel being stayed at as well as a thank you after the trip, and an I enjoyed going to destination, with child's name, destination and picture.
+6. Every stage of the trip: Prep before the flight, the airport, The plane ride, the destination, Going home. Each stage has a plan for the parent and one for the child.
+7. Pack the calm, ship the rest: The "go bag" (chewelry, headphones, preloaded music, snacks and the social story). Consider ship food and supplies ahead, for example by Amazon to the hotel or a relative's home. Then familiar things are already in when you get back.
+8. When it gets hard (the meltdown plan):
+   - Before: spot the triggers early.
+   - During: keep the child safe, cut down noise and light, use fewer words and find a quiet spot.
+   - After: a comfort item, water (in a reusable bottle). No blame. Note the trigger for next time.
+9. The Sunflower lanyard: The Hidden Disabilities Sunflower tells airport and airline staff quietly that a traveler
+   may need extra time, patience or help, win.
+10. Help that's easy to miss:
+   - TSA Cares: call about 72 hours before tsecurity.
+   - The airline's disability code (DPNA): ask the airline to add it to the booking.
+   - Pre-boarding and seat choice.
+   - Airport "Wings for Autism" rehearsals.
+   - Airport sensory rooms.
+   Most of this has to be set up BEFORE the flight
+11. A predictable schedule: Travel breaks routines, so the guide keeps the parts of the routine you can and makes the rest visible. That means schedule extra time built in, time-zone planning, and a plan ready if the flight is delayed.
+12. Communication strategies (suggestion from an autism support group): Open ended questions. May need to simplify. Please tell me more. Silence and mirroring. Can I share that back with you so that person feels heard and understood. What would you tell someone flying. What support might you need.
+
+IBM Bob: Please read through this plan and suggest improvements
+n
+The plan for the plan
+0) Each created artifact must say Created by IBM BOB. There must be an excel spreadsheet that lists A) the text above or B) the new prompt for the design decision
+1) Research all the items above. Create a research html with all questions and discovered answers. There needs to be a reference list of each website that is listed (Website will have a references page). NO hallucinations (child safety(. There needs to be a verification process for each website.
+2) After each plan stage get a review and feedback
+3) Suggest a simple clean easy to read style. Please offer html samples and choices
+4) Create a design doc for each each web page. Note each web page will have tabs for easy navigation between tabs
+5) Create a excel spreadsheet for feedback 
+6) Create a webpage for each topic above. Each page must say built by "IBM BOB". Please create a new excel spreadsheet for feedback
+7) Please create a decisions doc explaining the reason for design decisions
+8) Let's review
+
+Creating the actual website. I have purchased calmskiestravel.com . See contract.txt for details.
+The actual website, should not require anyone to login. Information can be passed between tabs. A key value pair file can be downloard from the site or uploaded. It should be able to make a report for the parent or the child based on values entered. (Perhaps the report can be scanned, to refill the entries in the pages).
+Discuss options for a certificate needed for https.
+
