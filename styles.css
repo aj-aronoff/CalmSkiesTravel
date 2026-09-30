@@ -457,6 +457,41 @@ a:hover { text-decoration: underline; }
   flex-basis: 100%;
 }
 
+/* References list */
+.ref-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.ref-list li {
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+}
+.ref-list li:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+.ref-list a {
+  font-weight: 700;
+  color: var(--blue-deep);
+  text-decoration: none;
+  font-size: 0.97rem;
+}
+.ref-list a:hover {
+  text-decoration: underline;
+}
+.ref-list a:focus-visible {
+  outline: 3px solid var(--blue-deep);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+.ref-list p {
+  margin: 4px 0 0;
+  font-size: 0.88rem;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
 /* Autosave indicator */
 .sb-autosave {
   font-size: 0.82rem;

@@ -81,8 +81,12 @@ The site shall contain the following tabs in the following order:
 | REQ-SB-08 | Line-art illustrations per story beat | Future visual enhancement |
 | REQ-SB-09 | Editable individual sentences in the generated story | Future UX enhancement |
 | REQ-HTY-01–05 | Hello & Thank You section | Full section not yet built |
-| REQ-REF-01–05 | Resources & References page | Full page not yet built |
 | REQ-OTR-01–06 | Our Trip Review page | Full page not yet built; suggested by A.J.'s wife |
+
+### Implemented from Future (moved here when completed)
+| Requirement ID | Feature | Implemented |
+|---|---|---|
+| REQ-REF-01–05 | Resources & References tab | ✅ Built — 12 verified links across 3 tiers; see `link-verification-log.md` |
 
 ---
 

@@ -224,6 +224,21 @@ function runSmokeTests(html, url) {
     return d.querySelector('footer') ? true : 'No <footer> element found';
   });
 
+  check('References tab #tab-references is present', function (d) {
+    return d.getElementById('tab-references') ? true : '#tab-references not found';
+  });
+
+  check('References panel #panel-references is present', function (d) {
+    return d.getElementById('panel-references') ? true : '#panel-references not found';
+  });
+
+  check('References panel contains at least 5 external links', function (d) {
+    var panel = d.getElementById('panel-references');
+    if (!panel) { return '#panel-references not found'; }
+    var links = panel.querySelectorAll('a[target="_blank"]');
+    return links.length >= 5 ? true : 'Only ' + links.length + ' external links found (expected ≥5)';
+  });
+
   check('"Share via QR Code" button is present', function (d) {
     return d.getElementById('sb-qr-btn') ? true : '#sb-qr-btn not found';
   });
