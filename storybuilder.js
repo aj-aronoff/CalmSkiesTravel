@@ -37,6 +37,19 @@ var FIELD_MAP = {
   'sb-detail':      'detail'
 };
 
+/**
+ * Maps slim QR-payload keys to the full field key names used in FIELD_MAP.
+ * Used by buildQRPayload and parseQRPayload to convert between formats.
+ */
+var QR_FIELD_MAP = {
+  'n':  'name',
+  'vi': 'visiting',
+  'd':  'destination',
+  'co': 'comfort',
+  'ca': 'calm',
+  'de': 'detail'
+};
+
 /* ─────────────────────────────────────────────────────────────────
    CORE FUNCTIONS
 ───────────────────────────────────────────────────────────────── */
@@ -184,6 +197,86 @@ function roundTripStoryData(domLookup) {
 }
 
 /* ─────────────────────────────────────────────────────────────────
+   QR PAYLOAD HELPERS
+   Slim format for QR codes only.  The save-file format is unchanged.
+───────────────────────────────────────────────────────────────── */
+
+/**
+ * Build a compact slim JSON string from a collectStoryData() result.
+ * Uses short keys and a Unix-seconds timestamp to stay well under 200 bytes.
+ *
+ * @param {object} data - Story payload (as returned by collectStoryData).
+ * @returns {string} Compact JSON string, e.g.
+ *   {"v":1,"t":1700000000,"f":{"n":"Maya","vi":"Grandma","d":"Florida","co":"blanket","ca":"breathe","de":"pool"}}
+ */
+function buildQRPayload(data) {
+  var slimFields = {};
+  var slimKeys = Object.keys(QR_FIELD_MAP);
+  for (var i = 0; i < slimKeys.length; i++) {
+    var slim = slimKeys[i];
+    var full = QR_FIELD_MAP[slim];
+    slimFields[slim] = data.fields[full];
+  }
+  return JSON.stringify({ v: 1, t: Math.floor(Date.now() / 1000), f: slimFields });
+}
+
+/**
+ * Validate a parsed slim QR payload object.
+ * Returns { valid: boolean, reason: string }.
+ *
+ * @param {*} obj - The parsed value to validate.
+ * @returns {{ valid: boolean, reason: string }}
+ */
+function validateQRPayload(obj) {
+  if (obj === null || typeof obj !== 'object' || Array.isArray(obj)) {
+    return { valid: false, reason: 'Payload must be a plain object.' };
+  }
+  if (!Object.prototype.hasOwnProperty.call(obj, 'v')) {
+    return { valid: false, reason: 'Missing required key: "v".' };
+  }
+  if (!Object.prototype.hasOwnProperty.call(obj, 'f') ||
+      obj.f === null || typeof obj.f !== 'object' || Array.isArray(obj.f)) {
+    return { valid: false, reason: 'Missing or invalid key: "f".' };
+  }
+  var slimKeys = Object.keys(QR_FIELD_MAP);
+  for (var i = 0; i < slimKeys.length; i++) {
+    var slim = slimKeys[i];
+    if (!Object.prototype.hasOwnProperty.call(obj.f, slim)) {
+      return { valid: false, reason: 'Missing slim field: "' + slim + '".' };
+    }
+    if (typeof obj.f[slim] !== 'string') {
+      return { valid: false, reason: 'Slim field "' + slim + '" must be a string.' };
+    }
+  }
+  return { valid: true, reason: 'ok' };
+}
+
+/**
+ * Parse a slim QR JSON string and return a full story data object
+ * (same shape as collectStoryData()), or null on any parse or validation failure.
+ *
+ * @param {string} text - The slim JSON string from a scanned QR code.
+ * @returns {object|null}
+ */
+function parseQRPayload(text) {
+  var obj = parseStoryJSON(text);
+  if (!obj) { return null; }
+  var v = validateQRPayload(obj);
+  if (!v.valid) { return null; }
+  var fullFields = {};
+  var slimKeys = Object.keys(QR_FIELD_MAP);
+  for (var i = 0; i < slimKeys.length; i++) {
+    var slim = slimKeys[i];
+    fullFields[QR_FIELD_MAP[slim]] = obj.f[slim];
+  }
+  return {
+    schemaVersion: 1,
+    savedAt: new Date().toISOString(),
+    fields: fullFields
+  };
+}
+
+/* ─────────────────────────────────────────────────────────────────
    LOCAL STORAGE
    Key used to store the story in localStorage.
    All data stays in the parent's browser — nothing is sent to any server.
@@ -266,6 +359,7 @@ if (typeof module !== 'undefined' && module.exports) {
     SCHEMA_VERSION:       SCHEMA_VERSION,
     FIELD_IDS:            FIELD_IDS,
     FIELD_MAP:            FIELD_MAP,
+    QR_FIELD_MAP:         QR_FIELD_MAP,
     LOCAL_STORAGE_KEY:    LOCAL_STORAGE_KEY,
     getFieldValue:        getFieldValue,
     collectStoryData:     collectStoryData,
@@ -277,6 +371,9 @@ if (typeof module !== 'undefined' && module.exports) {
     saveToLocalStorage:   saveToLocalStorage,
     loadFromLocalStorage: loadFromLocalStorage,
     clearLocalStorage:    clearLocalStorage,
-    hasSavedStory:        hasSavedStory
+    hasSavedStory:        hasSavedStory,
+    buildQRPayload:       buildQRPayload,
+    validateQRPayload:    validateQRPayload,
+    parseQRPayload:       parseQRPayload
   };
 }

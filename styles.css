@@ -447,6 +447,13 @@ a:hover { text-decoration: underline; }
   border-color: #7c5cd8;
 }
 .sb-btn-qr:hover { background: #f3f0fc; }
+.sb-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.sb-btn-qr-load {
+  background: var(--surface-lavender, #f3f0fc);
+  color: var(--accent-purple, #7c5cd8);
+  border-color: var(--accent-purple, #7c5cd8);
+}
+.sb-btn-qr-load:hover { background: #ebe6f9; }
 
 /* Status message */
 .sb-status {

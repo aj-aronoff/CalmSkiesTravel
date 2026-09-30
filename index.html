@@ -245,7 +245,25 @@
                 aria-describedby="sb-status">
           📱 Share via QR Code
         </button>
+        <button class="sb-btn sb-btn-qr-load" id="sb-qr-load-btn" type="button"
+                aria-describedby="sb-status">
+          📷 Load Story from QR
+        </button>
         <span id="sb-status" class="sb-status" role="status" aria-live="polite"></span>
+      </div>
+      <!-- QR Load paste section — hidden until activated -->
+      <div id="sb-qr-paste-section" style="display:none;margin-top:12px;">
+        <label for="sb-qr-input" style="display:block;font-size:0.85rem;margin-bottom:6px;color:var(--muted);">
+          Paste the QR code text below, then click Load:
+        </label>
+        <textarea id="sb-qr-input" rows="3"
+          style="width:100%;font-family:monospace;font-size:0.8rem;border:1px solid var(--border);border-radius:6px;padding:8px;resize:vertical;"
+          placeholder='{"v":1,"t":...}'
+          aria-label="Paste QR code text here"></textarea>
+        <button class="sb-btn sb-btn-qr" id="sb-qr-load-confirm" type="button"
+                style="margin-top:8px;" aria-describedby="sb-status">
+          Load from QR Text
+        </button>
       </div>
       <div class="sb-autosave" id="sb-autosave-row" aria-live="polite"></div>
 
@@ -1145,14 +1163,14 @@
   if (qrBtn) {
     qrBtn.addEventListener('click', function () {
       var data    = collectStoryData();
-      var json    = serialiseStoryData(data);
+      var slim    = buildQRPayload(data);
       var canvas  = document.getElementById('sb-qr-canvas');
       var section = document.getElementById('sb-qr-section');
       if (!canvas || !section) { return; }
 
       /* Generate QR using the bundled encoder */
       try {
-        generateQR(json, canvas, 200);
+        generateQR(slim, canvas, 200);
         section.style.display = 'block';
         canvas.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         showStatus('📱 QR code ready — scan with any phone camera!');
@@ -1162,6 +1180,23 @@
     });
   }
 
+  function updateQRButtonState() {
+    if (!qrBtn) { return; }
+    var data   = collectStoryData();
+    var slim   = buildQRPayload(data);
+    var result = canEncodeAsQR(slim);
+    qrBtn.disabled = !result.ok;
+    if (!result.ok) {
+      qrBtn.title = result.reason === 'too-long'
+        ? 'QR unavailable — story text is too long (200-byte limit)'
+        : result.reason === 'non-ascii'
+          ? 'QR unavailable — text contains unsupported characters'
+          : 'QR unavailable';
+    } else {
+      qrBtn.title = '';
+    }
+  }
+
   /* Hide QR section whenever a field changes */
   sbFields.forEach(function (id) {
     var el = document.getElementById(id);
@@ -1169,9 +1204,60 @@
       el.addEventListener('input', function () {
         var section = document.getElementById('sb-qr-section');
         if (section) { section.style.display = 'none'; }
+        updateQRButtonState();
       });
     }
   });
+
+  updateQRButtonState();
+
+  window.updateQRButtonState = updateQRButtonState;
+
+  function loadStoryFromQRText(text) {
+    if (!text || !text.trim()) {
+      return { success: false, reason: 'No text provided.' };
+    }
+    var data = parseQRPayload(text);
+    if (!data) {
+      return { success: false, reason: 'Not a valid Calm Skies QR payload.' };
+    }
+    var result = populateStoryFields(data, document, updateStory);
+    if (result.success) {
+      updateQRButtonState();
+    }
+    return result;
+  }
+
+  /* Wire up QR Load toggle button */
+  var qrLoadBtn = document.getElementById('sb-qr-load-btn');
+  if (qrLoadBtn) {
+    qrLoadBtn.addEventListener('click', function () {
+      var section = document.getElementById('sb-qr-paste-section');
+      if (section) {
+        section.style.display = section.style.display === 'none' ? 'block' : 'none';
+      }
+    });
+  }
+
+  /* Wire up QR Load confirm button */
+  var qrLoadConfirm = document.getElementById('sb-qr-load-confirm');
+  if (qrLoadConfirm) {
+    qrLoadConfirm.addEventListener('click', function () {
+      var input = document.getElementById('sb-qr-input');
+      var text  = input ? input.value : '';
+      var result = loadStoryFromQRText(text);
+      if (result.success) {
+        showStatus('✅ Story loaded from QR!');
+        var section = document.getElementById('sb-qr-paste-section');
+        if (section) { section.style.display = 'none'; }
+        if (input) { input.value = ''; }
+      } else {
+        showStatus('⚠️ Not a valid Calm Skies QR code.');
+      }
+    });
+  }
+
+  window.loadStoryFromQRText = loadStoryFromQRText;
 
 }());
 </script>
@@ -1238,6 +1324,25 @@
       }
     }
     return msg.slice(data.length);
+  }
+
+  /* ── UTF-8 byte-length helper ── */
+  function byteLength(str) {
+    if (typeof TextEncoder !== 'undefined') {
+      return new TextEncoder().encode(str).length;
+    }
+    return encodeURIComponent(str).replace(/%[0-9A-F]{2}/gi, 'x').length;
+  }
+
+  /* ── Pre-flight validation ── */
+  function canEncodeAsQR(text) {
+    if (!text || text.trim() === '') { return { ok: false, reason: 'empty' }; }
+    if (byteLength(text) > 200)     { return { ok: false, reason: 'too-long' }; }
+    for (var i = 0; i < text.length; i++) {
+      var c = text.charCodeAt(i);
+      if (c < 0x20 || c > 0x7E) { return { ok: false, reason: 'non-ascii' }; }
+    }
+    return { ok: true };
   }
 
   /* ── QR version / capacity tables (versions 1-10, ECC M) ── */
@@ -1467,11 +1572,14 @@
     } catch (e) {
       compact = text;
     }
+    if (byteLength(compact) > 200) { throw new Error('QR payload exceeds 200-byte limit.'); }
     var version  = pickVersion(compact.length);
     var dataBits = encodeData(compact, version);
     var matrix   = buildMatrix(version, dataBits);
     drawMatrix(matrix, canvas, size || 200);
   };
+
+  window.canEncodeAsQR = canEncodeAsQR;
 
 }());
 </script>

@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>QR Validation — Test Suite | Calm Skies Travel</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      font-size: 15px;
+      line-height: 1.65;
+      background: #F7FBFF;
+      color: #2D3748;
+      padding: 32px 24px 64px;
+      max-width: 860px;
+      margin: 0 auto;
+    }
+    h1 { font-size: 1.6rem; color: #2E7CB8; margin-bottom: 6px; }
+    .subtitle { color: #718096; font-size: 0.9rem; margin-bottom: 28px; }
+    h2 { font-size: 1.05rem; font-weight: 700; color: #2E7CB8;
+         margin: 28px 0 10px; border-bottom: 2px solid #C8DFF2; padding-bottom: 6px; }
+
+    #summary {
+      display: flex; gap: 20px; flex-wrap: wrap; align-items: center;
+      background: #fff; border: 1px solid #C8DFF2; border-radius: 10px;
+      padding: 14px 20px; margin-bottom: 28px; box-shadow: 0 2px 8px rgba(45,55,72,.08);
+    }
+    .sum-item { font-size: 0.92rem; font-weight: 700; }
+    .sum-pass  { color: #006B3C; }
+    .sum-fail  { color: #C0392B; }
+    .sum-skip  { color: #718096; }
+    .sum-total { color: #2E7CB8; }
+    .sum-conf  { color: #2E7CB8; }
+
+    .test-row {
+      display: grid;
+      grid-template-columns: 28px 1fr auto;
+      align-items: start;
+      gap: 10px;
+      padding: 9px 14px;
+      border-radius: 6px;
+      margin-bottom: 5px;
+      font-size: 0.88rem;
+    }
+    .test-row.pass { background: #EBF7F0; }
+    .test-row.fail { background: #FDF0EF; }
+    .test-row.skip { background: #F3F4F6; }
+
+    .test-icon { font-size: 1rem; line-height: 1.5; }
+    .test-name { font-weight: 600; color: #2D3748; }
+    .test-detail { font-size: 0.82rem; color: #718096; margin-top: 3px; font-weight: 400; }
+    .test-badge {
+      font-size: 0.75rem; font-weight: 700; padding: 2px 8px;
+      border-radius: 4px; white-space: nowrap; align-self: center;
+    }
+    .test-badge.pass { background: #006B3C; color: #fff; }
+    .test-badge.fail { background: #C0392B; color: #fff; }
+    .test-badge.skip { background: #718096; color: #fff; }
+
+    .footer-note {
+      margin-top: 40px; font-size: 0.8rem; color: #718096;
+      border-top: 1px solid #C8DFF2; padding-top: 16px;
+    }
+
+    #fixture { display: none; }
+  </style>
+</head>
+<body>
+
+<h1>QR Validation — Test Suite</h1>
+<p class="subtitle">Calm Skies Travel &nbsp;·&nbsp; Created by IBM Bob &nbsp;·&nbsp; Zero external dependencies</p>
+
+<div id="summary">
+  <span class="sum-item sum-total">Total: <span id="s-total">–</span></span>
+  <span class="sum-item sum-pass">✅ Passed: <span id="s-pass">–</span></span>
+  <span class="sum-item sum-fail">❌ Failed: <span id="s-fail">–</span></span>
+  <span class="sum-item sum-skip">⏭ Skipped: <span id="s-skip">–</span></span>
+  <span class="sum-item sum-conf">Confidence: <span id="s-conf">–</span></span>
+</div>
+
+<div id="results"></div>
+
+<!-- Hidden fixture DOM — simulates the Story Builder form + QR elements -->
+<div id="fixture">
+  <input id="sb-name"        type="text" value=""/>
+  <input id="sb-visiting"    type="text" value=""/>
+  <input id="sb-destination" type="text" value=""/>
+  <input id="sb-comfort"     type="text" value=""/>
+  <input id="sb-calm"        type="text" value=""/>
+  <input id="sb-detail"      type="text" value=""/>
+  <canvas id="sb-qr-canvas"></canvas>
+  <button id="sb-qr-btn" type="button">Share via QR Code</button>
+  <textarea id="sb-qr-input"></textarea>
+</div>
+
+<!-- storybuilder.js provides: buildQRPayload, parseQRPayload, validateQRPayload,
+     collectStoryData, populateStoryFields, QR_FIELD_MAP -->
+<script src="storybuilder.js"></script>
+
+<!-- Inline QR encoder: provides generateQR and canEncodeAsQR on window -->
+<script>
+(function () {
+  'use strict';
+
+  /* ── Reed-Solomon GF(256) tables ── */
+  var GF_EXP = new Array(512);
+  var GF_LOG = new Array(256);
+  (function () {
+    var x = 1;
+    for (var i = 0; i < 255; i++) {
+      GF_EXP[i] = x;
+      GF_LOG[x] = i;
+      x = x << 1;
+      if (x & 0x100) { x ^= 0x11d; }
+    }
+    for (var j = 255; j < 512; j++) { GF_EXP[j] = GF_EXP[j - 255]; }
+  })();
+
+  function gfMul(a, b) {
+    if (a === 0 || b === 0) { return 0; }
+    return GF_EXP[(GF_LOG[a] + GF_LOG[b]) % 255];
+  }
+
+  function rsGeneratorPoly(nec) {
+    var g = [1];
+    for (var i = 0; i < nec; i++) {
+      var factor = [1, GF_EXP[i]];
+      var result = new Array(g.length + factor.length - 1).fill(0);
+      for (var j = 0; j < g.length; j++) {
+        for (var k = 0; k < factor.length; k++) {
+          result[j + k] ^= gfMul(g[j], factor[k]);
+        }
+      }
+      g = result;
+    }
+    return g;
+  }
+
+  function rsEncode(data, nec) {
+    var gen  = rsGeneratorPoly(nec);
+    var msg  = data.slice();
+    for (var i = 0; i < nec; i++) { msg.push(0); }
+    for (var i = 0; i < data.length; i++) {
+      var coef = msg[i];
+      if (coef !== 0) {
+        for (var j = 1; j < gen.length; j++) {
+          msg[i + j] ^= gfMul(gen[j], coef);
+        }
+      }
+    }
+    return msg.slice(data.length);
+  }
+
+  function byteLength(str) {
+    if (typeof TextEncoder !== 'undefined') {
+      return new TextEncoder().encode(str).length;
+    }
+    return encodeURIComponent(str).replace(/%[0-9A-F]{2}/gi, 'x').length;
+  }
+
+  function canEncodeAsQR(text) {
+    if (!text || text.trim() === '') { return { ok: false, reason: 'empty' }; }
+    if (byteLength(text) > 200)     { return { ok: false, reason: 'too-long' }; }
+    for (var i = 0; i < text.length; i++) {
+      var c = text.charCodeAt(i);
+      if (c < 0x20 || c > 0x7E) { return { ok: false, reason: 'non-ascii' }; }
+    }
+    return { ok: true };
+  }
+
+  var VER_TABLE = [
+    null,
+    [16,  10, 1,  21],
+    [28,  16, 1,  25],
+    [44,  26, 2,  29],
+    [64,  18, 2,  33],
+    [86,  24, 2,  37],
+    [108, 16, 4,  41],
+    [124, 18, 4,  45],
+    [154, 22, 4,  49],
+    [182, 22, 5,  53],
+    [216, 26, 6,  57]
+  ];
+
+  function pickVersion(byteLen) {
+    for (var v = 1; v <= 10; v++) {
+      if (VER_TABLE[v][0] - 2 >= byteLen) { return v; }
+    }
+    throw new Error('Text too long for QR (max ~200 chars for v10 ECC M).');
+  }
+
+  function encodeData(text, version) {
+    var bytes = [];
+    for (var i = 0; i < text.length; i++) {
+      var c = text.charCodeAt(i);
+      if (c > 0x7e) { throw new Error('Non-ASCII character in QR data.'); }
+      bytes.push(c);
+    }
+    var row       = VER_TABLE[version];
+    var totalDC   = row[0];
+    var ecPerBlk  = row[1];
+    var numBlocks = row[2];
+    var dataCap   = totalDC - 2;
+    var bits = [];
+    function pushBits(val, len) {
+      for (var b = len - 1; b >= 0; b--) { bits.push((val >> b) & 1); }
+    }
+    pushBits(0b0100, 4);
+    pushBits(bytes.length, 8);
+    for (var i = 0; i < bytes.length; i++) { pushBits(bytes[i], 8); }
+    pushBits(0b0000, 4);
+    while (bits.length % 8 !== 0) { bits.push(0); }
+    var codewords = [];
+    for (var i = 0; i < bits.length; i += 8) {
+      var byt = 0;
+      for (var j = 0; j < 8; j++) { byt = (byt << 1) | (bits[i + j] || 0); }
+      codewords.push(byt);
+    }
+    var pad = [0xEC, 0x11];
+    while (codewords.length < dataCap) { codewords.push(pad[(codewords.length) % 2]); }
+    var blkSize  = Math.floor(dataCap / numBlocks);
+    var allData  = [];
+    var allEC    = [];
+    for (var b = 0; b < numBlocks; b++) {
+      var blk = codewords.slice(b * blkSize, (b + 1) * blkSize);
+      allData.push(blk);
+      allEC.push(rsEncode(blk, ecPerBlk));
+    }
+    var final = [];
+    var maxLen = Math.max.apply(null, allData.map(function(d){return d.length;}));
+    for (var i = 0; i < maxLen; i++) {
+      for (var b = 0; b < numBlocks; b++) {
+        if (i < allData[b].length) { final.push(allData[b][i]); }
+      }
+    }
+    for (var i = 0; i < ecPerBlk; i++) {
+      for (var b = 0; b < numBlocks; b++) { final.push(allEC[b][i]); }
+    }
+    var rem = [0,0,7,7,7,7,7,0,0,0,0][version] || 0;
+    var outBits = [];
+    for (var i = 0; i < final.length; i++) {
+      for (var b = 7; b >= 0; b--) { outBits.push((final[i] >> b) & 1); }
+    }
+    for (var i = 0; i < rem; i++) { outBits.push(0); }
+    return outBits;
+  }
+
+  function buildMatrix(version, dataBits) {
+    var size = VER_TABLE[version][3];
+    var mat  = [];
+    var func = [];
+    for (var i = 0; i < size; i++) {
+      mat.push(new Array(size).fill(0));
+      func.push(new Array(size).fill(false));
+    }
+    function setModule(r, c, v, isFunc) {
+      if (r < 0 || r >= size || c < 0 || c >= size) { return; }
+      mat[r][c]  = v;
+      if (isFunc) { func[r][c] = true; }
+    }
+    function finder(tr, tc) {
+      for (var r = -1; r <= 7; r++) {
+        for (var c = -1; c <= 7; c++) {
+          var v = (r === -1 || r === 7 || c === -1 || c === 7 ||
+                   (r >= 2 && r <= 4 && c >= 2 && c <= 4)) ? 1 : 0;
+          setModule(tr + r, tc + c, v, true);
+        }
+      }
+    }
+    finder(0, 0);
+    finder(0, size - 7);
+    finder(size - 7, 0);
+    for (var i = 8; i < size - 8; i++) {
+      setModule(6, i, i % 2 === 0 ? 1 : 0, true);
+      setModule(i, 6, i % 2 === 0 ? 1 : 0, true);
+    }
+    setModule(size - 8, 8, 1, true);
+    var ALIGN = [null,[],[6,18],[6,22],[6,26],[6,30],[6,34],
+                 [6,22,38],[6,24,42],[6,28,46],[6,32,50]];
+    var positions = ALIGN[version] || [];
+    for (var ai = 0; ai < positions.length; ai++) {
+      for (var aj = 0; aj < positions.length; aj++) {
+        var ar = positions[ai], ac = positions[aj];
+        if (func[ar][ac]) { continue; }
+        for (var dr = -2; dr <= 2; dr++) {
+          for (var dc = -2; dc <= 2; dc++) {
+            var av = (Math.abs(dr) === 2 || Math.abs(dc) === 2 ||
+                     (dr === 0 && dc === 0)) ? 1 : 0;
+            setModule(ar + dr, ac + dc, av, true);
+          }
+        }
+      }
+    }
+    var FORMAT_MASK0 = 0b111011111000100;
+    function placeFormat(fmt) {
+      var bits = [];
+      for (var b = 14; b >= 0; b--) { bits.push((fmt >> b) & 1); }
+      var idx = 0;
+      for (var i = 0; i <= 5; i++) { setModule(8, i, bits[idx++], true); }
+      setModule(8, 7, bits[idx++], true);
+      setModule(8, 8, bits[idx++], true);
+      setModule(7, 8, bits[idx++], true);
+      for (var i = 5; i >= 0; i--) { setModule(i, 8, bits[idx++], true); }
+      idx = 0;
+      for (var i = size - 1; i >= size - 8; i--) { setModule(8, i, bits[idx++], true); }
+      for (var i = size - 7; i < size; i++)       { setModule(i, 8, bits[idx++], true); }
+    }
+    placeFormat(FORMAT_MASK0);
+    var bitIdx = 0;
+    var col = size - 1;
+    var goUp = true;
+    while (col > 0) {
+      if (col === 6) { col--; }
+      for (var rr = 0; rr < size; rr++) {
+        var row = goUp ? (size - 1 - rr) : rr;
+        for (var cc = 0; cc <= 1; cc++) {
+          var c = col - cc;
+          if (!func[row][c]) {
+            var bit = bitIdx < dataBits.length ? dataBits[bitIdx++] : 0;
+            mat[row][c] = bit ^ ((row + c) % 2 === 0 ? 1 : 0);
+          }
+        }
+      }
+      col -= 2;
+      goUp = !goUp;
+    }
+    return mat;
+  }
+
+  function drawMatrix(mat, canvas, size) {
+    var n    = mat.length;
+    var ctx  = canvas.getContext('2d');
+    var mod  = Math.floor(size / (n + 8));
+    var qz   = Math.floor((size - mod * n) / 2);
+    canvas.width  = size;
+    canvas.height = size;
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, size, size);
+    ctx.fillStyle = '#000000';
+    for (var r = 0; r < n; r++) {
+      for (var c = 0; c < n; c++) {
+        if (mat[r][c]) {
+          ctx.fillRect(qz + c * mod, qz + r * mod, mod, mod);
+        }
+      }
+    }
+  }
+
+  window.generateQR = function (text, canvas, size) {
+    var compact;
+    try {
+      compact = JSON.stringify(JSON.parse(text));
+    } catch (e) {
+      compact = text;
+    }
+    if (byteLength(compact) > 200) { throw new Error('QR payload exceeds 200-byte limit.'); }
+    var version  = pickVersion(compact.length);
+    var dataBits = encodeData(compact, version);
+    var matrix   = buildMatrix(version, dataBits);
+    drawMatrix(matrix, canvas, size || 200);
+  };
+
+  window.canEncodeAsQR = canEncodeAsQR;
+
+}());
+</script>
+
+<!-- Wire updateQRButtonState for button-state tests -->
+<script>
+'use strict';
+(function () {
+  var qrBtn = document.getElementById('sb-qr-btn');
+  window.updateQRButtonState = function () {
+    if (!qrBtn) { return; }
+    var data   = collectStoryData();
+    var slim   = buildQRPayload(data);
+    var result = canEncodeAsQR(slim);
+    qrBtn.disabled = !result.ok;
+    qrBtn.title = result.ok ? '' :
+      result.reason === 'too-long'  ? 'QR unavailable — story text is too long (200-byte limit)' :
+      result.reason === 'non-ascii' ? 'QR unavailable — text contains unsupported characters' :
+                                      'QR unavailable';
+  };
+
+  window.loadStoryFromQRText = function (text) {
+    if (!text || !text.trim()) {
+      return { success: false, reason: 'No text provided.' };
+    }
+    var data = parseQRPayload(text);
+    if (!data) {
+      return { success: false, reason: 'Not a valid Calm Skies QR payload.' };
+    }
+    return populateStoryFields(data, document, function () {});
+  };
+}());
+</script>
+
+<script>
+'use strict';
+
+/* ══════════════════════════════════════════════════════════════════
+   TINY TEST HARNESS
+══════════════════════════════════════════════════════════════════ */
+var results = [];
+
+function pass(name, detail) { results.push({ status: 'pass', name: name, detail: detail || '' }); }
+function fail(name, detail) { results.push({ status: 'fail', name: name, detail: detail || '' }); }
+function skip(name, detail) { results.push({ status: 'skip', name: name, detail: detail || '' }); }
+
+function assertEqual(actual, expected, label) {
+  if (actual === expected) { return true; }
+  throw new Error(label + ' — expected ' + JSON.stringify(expected) + ', got ' + JSON.stringify(actual));
+}
+function assertTrue(value, label) {
+  if (value) { return true; }
+  throw new Error(label + ' — expected truthy, got ' + JSON.stringify(value));
+}
+function assertFalse(value, label) {
+  if (!value) { return true; }
+  throw new Error(label + ' — expected falsy, got ' + JSON.stringify(value));
+}
+function assertContains(str, sub, label) {
+  if (typeof str === 'string' && str.indexOf(sub) !== -1) { return true; }
+  throw new Error(label + ' — expected "' + str + '" to contain "' + sub + '"');
+}
+
+function test(name, fn) {
+  try { fn(); pass(name); } catch (e) { fail(name, e.message); }
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   HELPERS
+══════════════════════════════════════════════════════════════════ */
+
+function setField(id, value) {
+  var el = document.getElementById(id);
+  if (el) { el.value = value; }
+}
+
+function fireInput(id) {
+  var el = document.getElementById(id);
+  if (el) { el.dispatchEvent(new Event('input', { bubbles: true })); }
+}
+
+function clearAllFields() {
+  ['sb-name','sb-visiting','sb-destination','sb-comfort','sb-calm','sb-detail']
+    .forEach(function (id) { setField(id, ''); });
+}
+
+function fillAllFields() {
+  setField('sb-name',        'Maya');
+  setField('sb-visiting',    'Grandma');
+  setField('sb-destination', 'Florida');
+  setField('sb-comfort',     'blue blanket');
+  setField('sb-calm',        'squeeze fidget');
+  setField('sb-detail',      'pool swim');
+}
+
+/* Build a synthetic all-ASCII string of exactly n bytes */
+function asciiString(n) {
+  var s = '';
+  for (var i = 0; i < n; i++) { s += 'A'; }
+  return s;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   GROUP 1 — canEncodeAsQR: Positive Tests
+══════════════════════════════════════════════════════════════════ */
+document.getElementById('results').insertAdjacentHTML('beforeend',
+  '<h2>Group 1 — canEncodeAsQR: Positive Tests</h2>');
+
+test('QR-P01: short ASCII story returns ok:true', function () {
+  clearAllFields();
+  fillAllFields();
+  var slim = buildQRPayload(collectStoryData());
+  var r = canEncodeAsQR(slim);
+  assertTrue(r.ok, 'ok should be true');
+});
+
+test('QR-P02: all fields empty returns ok:true (slim payload ~74 bytes)', function () {
+  clearAllFields();
+  var slim = buildQRPayload(collectStoryData());
+  var r = canEncodeAsQR(slim);
+  assertTrue(r.ok, 'ok should be true for empty fields');
+});
+
+test('QR-P03: synthetic string of exactly 200 bytes returns ok:true', function () {
+  var s = asciiString(200);
+  var r = canEncodeAsQR(s);
+  assertTrue(r.ok, '200-byte string should be ok');
+});
+
+test('QR-P04: name="Maya" dest="FL" rest empty returns ok:true', function () {
+  clearAllFields();
+  setField('sb-name', 'Maya');
+  setField('sb-destination', 'FL');
+  var slim = buildQRPayload(collectStoryData());
+  var r = canEncodeAsQR(slim);
+  assertTrue(r.ok, 'minimal story should be ok');
+});
+
+/* ══════════════════════════════════════════════════════════════════
+   GROUP 2 — canEncodeAsQR: Negative Tests
+══════════════════════════════════════════════════════════════════ */
+document.getElementById('results').insertAdjacentHTML('beforeend',
+  '<h2>Group 2 — canEncodeAsQR: Negative Tests</h2>');
+
+test('QR-N01: fields with emoji are rejected — ok:false (non-ascii or too-long)', function () {
+  clearAllFields();
+  /* Emoji in field values make the QR unencodable.
+     JSON.stringify may embed raw surrogates (non-ascii) or escape them as \uXXXX (too-long).
+     Either way canEncodeAsQR returns ok:false — the button is disabled.
+     We test that ok is false and reason is one of the two valid rejection codes. */
+  var manyEmoji = '\uD83D\uDE00\uD83D\uDE00\uD83D\uDE00\uD83D\uDE00\uD83D\uDE00'; /* 5 emoji */
+  setField('sb-name',        manyEmoji);
+  setField('sb-visiting',    manyEmoji);
+  setField('sb-destination', manyEmoji);
+  setField('sb-comfort',     manyEmoji);
+  setField('sb-calm',        manyEmoji);
+  setField('sb-detail',      manyEmoji);
+  var slim = buildQRPayload(collectStoryData());
+  var r = canEncodeAsQR(slim);
+  assertFalse(r.ok, 'emoji fields must not be ok');
+  assertTrue(r.reason === 'too-long' || r.reason === 'non-ascii',
+    'reason should be too-long or non-ascii, got: ' + r.reason);
+});
+
+test('QR-N02: all fields with long ASCII strings causes too-long', function () {
+  clearAllFields();
+  /* 30 chars × 6 fields = 180 chars of field content + ~74 overhead > 200 */
+  var long = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ1234';
+  setField('sb-name',        long);
+  setField('sb-visiting',    long);
+  setField('sb-destination', long);
+  setField('sb-comfort',     long);
+  setField('sb-calm',        long);
+  setField('sb-detail',      long);
+  var slim = buildQRPayload(collectStoryData());
+  var r = canEncodeAsQR(slim);
+  assertFalse(r.ok, 'overlong payload should not be ok');
+  assertEqual(r.reason, 'too-long', 'reason should be too-long');
+});
+
+test('QR-N03: synthetic string of exactly 201 bytes returns too-long', function () {
+  var s = asciiString(201);
+  var r = canEncodeAsQR(s);
+  assertFalse(r.ok, '201-byte string should not be ok');
+  assertEqual(r.reason, 'too-long', 'reason should be too-long');
+});
+
+test('QR-N04: empty string returns empty', function () {
+  var r = canEncodeAsQR('');
+  assertFalse(r.ok, 'empty string should not be ok');
+  assertEqual(r.reason, 'empty', 'reason should be empty');
+});
+
+test('QR-N05: whitespace-only string returns empty', function () {
+  var r = canEncodeAsQR('   ');
+  assertFalse(r.ok, 'whitespace string should not be ok');
+  assertEqual(r.reason, 'empty', 'reason should be empty');
+});
+
+test('QR-N06: null/falsy input returns empty', function () {
+  var r = canEncodeAsQR(null);
+  assertFalse(r.ok, 'null should not be ok');
+  assertEqual(r.reason, 'empty', 'reason should be empty');
+});
+
+test('QR-N07: string with raw DEL character (0x7F) returns non-ascii', function () {
+  var s = 'hello\x7Fworld'; /* DEL = 0x7F, just above printable range */
+  var r = canEncodeAsQR(s);
+  assertFalse(r.ok, 'DEL char should not be ok');
+  assertEqual(r.reason, 'non-ascii', 'reason should be non-ascii');
+});
+
+/* ══════════════════════════════════════════════════════════════════
+   GROUP 3 — Button State Tests
+══════════════════════════════════════════════════════════════════ */
+document.getElementById('results').insertAdjacentHTML('beforeend',
+  '<h2>Group 3 — Button State Tests</h2>');
+
+test('QR-B01: all fields empty — button is enabled (slim payload ~74 bytes < 200)', function () {
+  clearAllFields();
+  updateQRButtonState();
+  var btn = document.getElementById('sb-qr-btn');
+  assertFalse(btn.disabled, 'button should be enabled when fields are empty');
+});
+
+test('QR-B02: short ASCII values — button is enabled', function () {
+  clearAllFields();
+  fillAllFields();
+  updateQRButtonState();
+  var btn = document.getElementById('sb-qr-btn');
+  assertFalse(btn.disabled, 'button should be enabled for short ASCII story');
+});
+
+test('QR-B03: many emoji across all fields — button is disabled', function () {
+  clearAllFields();
+  /* Many emoji inflate the slim JSON well past 200 bytes */
+  var manyEmoji = '\uD83D\uDE00\uD83D\uDE00\uD83D\uDE00\uD83D\uDE00\uD83D\uDE00';
+  setField('sb-name',        manyEmoji);
+  setField('sb-visiting',    manyEmoji);
+  setField('sb-destination', manyEmoji);
+  setField('sb-comfort',     manyEmoji);
+  setField('sb-calm',        manyEmoji);
+  setField('sb-detail',      manyEmoji);
+  updateQRButtonState();
+  var btn = document.getElementById('sb-qr-btn');
+  assertTrue(btn.disabled, 'button should be disabled when payload > 200 bytes due to emoji');
+});
+
+test('QR-B04: remove emoji, restore short ASCII — button re-enables', function () {
+  clearAllFields();
+  var manyEmoji = '\uD83D\uDE00\uD83D\uDE00\uD83D\uDE00\uD83D\uDE00\uD83D\uDE00';
+  setField('sb-name',        manyEmoji);
+  setField('sb-visiting',    manyEmoji);
+  setField('sb-destination', manyEmoji);
+  setField('sb-comfort',     manyEmoji);
+  setField('sb-calm',        manyEmoji);
+  setField('sb-detail',      manyEmoji);
+  updateQRButtonState();
+  var btn = document.getElementById('sb-qr-btn');
+  assertTrue(btn.disabled, 'button disabled with many emoji');
+  clearAllFields();
+  fillAllFields(); /* short ASCII */
+  updateQRButtonState();
+  assertFalse(btn.disabled, 'button re-enabled after restoring short ASCII');
+  clearAllFields();
+});
+
+test('QR-B05: fill fields until slim payload > 200 bytes — button disables', function () {
+  clearAllFields();
+  /* 30-char × 6 fields pushes well past 200 */
+  var long = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ1234';
+  setField('sb-name',        long);
+  setField('sb-visiting',    long);
+  setField('sb-destination', long);
+  setField('sb-comfort',     long);
+  setField('sb-calm',        long);
+  setField('sb-detail',      long);
+  updateQRButtonState();
+  var btn = document.getElementById('sb-qr-btn');
+  assertTrue(btn.disabled, 'button should be disabled when payload > 200 bytes');
+  clearAllFields();
+});
+
+/* ══════════════════════════════════════════════════════════════════
+   GROUP 4 — Length Boundary Tests
+══════════════════════════════════════════════════════════════════ */
+document.getElementById('results').insertAdjacentHTML('beforeend',
+  '<h2>Group 4 — Length Boundary Tests</h2>');
+
+test('QR-L01: exactly 200 bytes → ok:true (at the limit)', function () {
+  var s = asciiString(200);
+  var r = canEncodeAsQR(s);
+  assertTrue(r.ok, '200-byte string should pass');
+});
+
+test('QR-L02: exactly 201 bytes → ok:false, too-long (one over)', function () {
+  var s = asciiString(201);
+  var r = canEncodeAsQR(s);
+  assertFalse(r.ok, '201-byte string should fail');
+  assertEqual(r.reason, 'too-long', 'reason should be too-long');
+});
+
+test('QR-L03: all-empty fields slim payload is under 200 bytes', function () {
+  clearAllFields();
+  var slim = buildQRPayload(collectStoryData());
+  /* Measure byte length using TextEncoder or encodeURIComponent */
+  var len;
+  if (typeof TextEncoder !== 'undefined') {
+    len = new TextEncoder().encode(slim).length;
+  } else {
+    len = encodeURIComponent(slim).replace(/%[0-9A-F]{2}/gi, 'x').length;
+  }
+  assertTrue(len < 200, 'all-empty slim payload (' + len + ' bytes) should be < 200');
+  assertTrue(len > 60,  'all-empty slim payload should be > 60 bytes (sanity check)');
+});
+
+test('QR-L04: 199-byte string → ok:true (one under limit)', function () {
+  var s = asciiString(199);
+  var r = canEncodeAsQR(s);
+  assertTrue(r.ok, '199-byte string should pass');
+});
+
+/* ══════════════════════════════════════════════════════════════════
+   GROUP 5 — generateQR Live Calls
+══════════════════════════════════════════════════════════════════ */
+document.getElementById('results').insertAdjacentHTML('beforeend',
+  '<h2>Group 5 — generateQR Live Calls (actual encoding)</h2>');
+
+test('QR-G01: short ASCII story — generateQR draws canvas (no throw, width > 0)', function () {
+  clearAllFields();
+  fillAllFields();
+  var slim   = buildQRPayload(collectStoryData());
+  var canvas = document.getElementById('sb-qr-canvas');
+  canvas.width = 0; /* reset */
+  generateQR(slim, canvas, 200);
+  assertTrue(canvas.width > 0, 'canvas.width should be > 0 after successful encode');
+});
+
+test('QR-G02: all fields empty — generateQR draws canvas (slim payload ~74 bytes)', function () {
+  clearAllFields();
+  var slim   = buildQRPayload(collectStoryData());
+  var canvas = document.getElementById('sb-qr-canvas');
+  canvas.width = 0;
+  generateQR(slim, canvas, 200);
+  assertTrue(canvas.width > 0, 'canvas.width should be > 0 for empty-field story');
+});
+
+test('QR-G03: payload > 200 bytes — generateQR throws', function () {
+  var overlong = asciiString(201); /* pure ASCII but over 200 bytes */
+  var canvas   = document.getElementById('sb-qr-canvas');
+  var threw = false;
+  try {
+    generateQR(overlong, canvas, 200);
+  } catch (e) {
+    threw = true;
+  }
+  assertTrue(threw, 'generateQR should throw for 201-byte payload');
+});
+
+test('QR-G04: exactly 200-byte ASCII payload — generateQR draws canvas', function () {
+  var s      = asciiString(200);
+  var canvas = document.getElementById('sb-qr-canvas');
+  canvas.width = 0;
+  generateQR(s, canvas, 200);
+  assertTrue(canvas.width > 0, 'canvas should be drawn for 200-byte payload');
+});
+
+test('QR-G05: buildQRPayload output fed directly to generateQR — succeeds', function () {
+  clearAllFields();
+  setField('sb-name', 'Sam');
+  setField('sb-destination', 'NYC');
+  var slim   = buildQRPayload(collectStoryData());
+  var canvas = document.getElementById('sb-qr-canvas');
+  canvas.width = 0;
+  var threw = false;
+  try { generateQR(slim, canvas, 200); } catch (e) { threw = true; }
+  assertFalse(threw, 'generateQR should not throw for valid slim payload');
+  assertTrue(canvas.width > 0, 'canvas should be drawn');
+  clearAllFields();
+});
+
+/* ══════════════════════════════════════════════════════════════════
+   GROUP 6 — QR Load: Positive Tests
+══════════════════════════════════════════════════════════════════ */
+document.getElementById('results').insertAdjacentHTML('beforeend',
+  '<h2>Group 6 — QR Load: Positive Tests</h2>');
+
+test('QR-LP01: valid slim JSON string — loadStoryFromQRText populates all six fields', function () {
+  clearAllFields();
+  var slim = '{"v":1,"t":1700000000,"f":{"n":"Jordan","vi":"Uncle Bob","d":"Chicago","co":"lion","ca":"hum","de":"pizza"}}';
+  var r = loadStoryFromQRText(slim);
+  assertTrue(r.success, 'success should be true');
+  assertEqual(document.getElementById('sb-name').value,        'Jordan',    'name populated');
+  assertEqual(document.getElementById('sb-visiting').value,    'Uncle Bob', 'visiting populated');
+  assertEqual(document.getElementById('sb-destination').value, 'Chicago',   'destination populated');
+  assertEqual(document.getElementById('sb-comfort').value,     'lion',      'comfort populated');
+  assertEqual(document.getElementById('sb-calm').value,        'hum',       'calm populated');
+  assertEqual(document.getElementById('sb-detail').value,      'pizza',     'detail populated');
+  clearAllFields();
+});
+
+test('QR-LP02: slim JSON with all empty field values — success, all fields set to ""', function () {
+  fillAllFields(); /* pre-fill to prove they get cleared */
+  var slim = '{"v":1,"t":1700000000,"f":{"n":"","vi":"","d":"","co":"","ca":"","de":""}}';
+  var r = loadStoryFromQRText(slim);
+  assertTrue(r.success, 'success should be true for all-empty slim JSON');
+  assertEqual(document.getElementById('sb-name').value,        '', 'name cleared');
+  assertEqual(document.getElementById('sb-destination').value, '', 'destination cleared');
+  clearAllFields();
+});
+
+test('QR-LP03: slim JSON from buildQRPayload — fields match originals', function () {
+  clearAllFields();
+  fillAllFields();
+  var slim = buildQRPayload(collectStoryData());
+  clearAllFields(); /* wipe fields before loading */
+  var r = loadStoryFromQRText(slim);
+  assertTrue(r.success, 'success should be true');
+  assertEqual(document.getElementById('sb-name').value,        'Maya',            'name matches');
+  assertEqual(document.getElementById('sb-visiting').value,    'Grandma',         'visiting matches');
+  assertEqual(document.getElementById('sb-destination').value, 'Florida',         'destination matches');
+  assertEqual(document.getElementById('sb-comfort').value,     'blue blanket',    'comfort matches');
+  assertEqual(document.getElementById('sb-calm').value,        'squeeze fidget',  'calm matches');
+  assertEqual(document.getElementById('sb-detail').value,      'pool swim',       'detail matches');
+  clearAllFields();
+});
+
+/* ══════════════════════════════════════════════════════════════════
+   GROUP 7 — QR Load: Negative Tests
+══════════════════════════════════════════════════════════════════ */
+document.getElementById('results').insertAdjacentHTML('beforeend',
+  '<h2>Group 7 — QR Load: Negative Tests</h2>');
+
+test('QR-LN01: empty string — loadStoryFromQRText returns success:false', function () {
+  var r = loadStoryFromQRText('');
+  assertFalse(r.success, 'empty string should fail');
+});
+
+test('QR-LN02: full save-file JSON (long keys) — rejected (missing slim keys)', function () {
+  clearAllFields();
+  var fullJson = '{"schemaVersion":1,"savedAt":"2024-01-01T00:00:00.000Z","fields":{"name":"Maya","visiting":"Grandma","destination":"Florida","comfort":"blanket","calm":"breathe","detail":"pool"}}';
+  var r = loadStoryFromQRText(fullJson);
+  assertFalse(r.success, 'full save-file JSON should be rejected — wrong format');
+  /* Fields should not have changed */
+  assertEqual(document.getElementById('sb-name').value, '', 'fields should be unchanged');
+});
+
+test('QR-LN03: valid JSON missing "f" key — rejected', function () {
+  var r = loadStoryFromQRText('{"v":1,"t":1700000000}');
+  assertFalse(r.success, 'missing "f" key should be rejected');
+});
+
+test('QR-LN04: "f" present but missing slim field "n" — rejected', function () {
+  var r = loadStoryFromQRText('{"v":1,"t":1700000000,"f":{"vi":"G","d":"F","co":"B","ca":"C","de":"D"}}');
+  assertFalse(r.success, 'missing slim field "n" should be rejected');
+});
+
+test('QR-LN05: field value is a number, not string — rejected', function () {
+  var r = loadStoryFromQRText('{"v":1,"t":1700000000,"f":{"n":42,"vi":"G","d":"F","co":"B","ca":"C","de":"D"}}');
+  assertFalse(r.success, 'number field value should be rejected');
+});
+
+test('QR-LN06: completely malformed JSON — rejected', function () {
+  clearAllFields();
+  setField('sb-name', 'ShouldNotChange');
+  var r = loadStoryFromQRText('{bad json!!!}');
+  assertFalse(r.success, 'malformed JSON should be rejected');
+  assertEqual(document.getElementById('sb-name').value, 'ShouldNotChange', 'fields unchanged');
+  clearAllFields();
+});
+
+test('QR-LN07: JSON array at root — rejected', function () {
+  var r = loadStoryFromQRText('[1, 2, 3]');
+  assertFalse(r.success, 'array at root should be rejected');
+});
+
+test('QR-LN08: "f" is an array, not an object — rejected', function () {
+  var r = loadStoryFromQRText('{"v":1,"t":1700000000,"f":["n","vi","d","co","ca","de"]}');
+  assertFalse(r.success, '"f" as array should be rejected');
+});
+
+test('QR-LN09: whitespace-only string — rejected', function () {
+  var r = loadStoryFromQRText('   ');
+  assertFalse(r.success, 'whitespace-only should be rejected');
+});
+
+/* ══════════════════════════════════════════════════════════════════
+   GROUP 8 — Round-Trip Tests
+══════════════════════════════════════════════════════════════════ */
+document.getElementById('results').insertAdjacentHTML('beforeend',
+  '<h2>Group 8 — Round-Trip Tests</h2>');
+
+test('QR-RT01: fill form → buildQRPayload → parseQRPayload → populateStoryFields → fields match', function () {
+  clearAllFields();
+  fillAllFields();
+  var slim   = buildQRPayload(collectStoryData());
+  var parsed = parseQRPayload(slim);
+  assertTrue(parsed !== null, 'parseQRPayload should not return null');
+  clearAllFields();
+  var r = populateStoryFields(parsed);
+  assertTrue(r.success, 'populateStoryFields should succeed');
+  assertEqual(document.getElementById('sb-name').value,        'Maya',           'name round-trips');
+  assertEqual(document.getElementById('sb-visiting').value,    'Grandma',        'visiting round-trips');
+  assertEqual(document.getElementById('sb-destination').value, 'Florida',        'destination round-trips');
+  assertEqual(document.getElementById('sb-comfort').value,     'blue blanket',   'comfort round-trips');
+  assertEqual(document.getElementById('sb-calm').value,        'squeeze fidget', 'calm round-trips');
+  assertEqual(document.getElementById('sb-detail').value,      'pool swim',      'detail round-trips');
+  clearAllFields();
+});
+
+test('QR-RT02: round-trip with all fields empty — fields remain ""', function () {
+  fillAllFields();
+  clearAllFields();
+  var slim   = buildQRPayload(collectStoryData());
+  var parsed = parseQRPayload(slim);
+  assertTrue(parsed !== null, 'parsed should not be null');
+  var r = populateStoryFields(parsed);
+  assertTrue(r.success, 'populateStoryFields should succeed');
+  assertEqual(document.getElementById('sb-name').value,        '', 'name empty after round-trip');
+  assertEqual(document.getElementById('sb-destination').value, '', 'destination empty after round-trip');
+});
+
+test('QR-RT03: buildQRPayload → generateQR (no throw) → loadStoryFromQRText → fields match', function () {
+  clearAllFields();
+  setField('sb-name',        'Sam');
+  setField('sb-visiting',    'Dad');
+  setField('sb-destination', 'Boston');
+  setField('sb-comfort',     'bear');
+  setField('sb-calm',        'count');
+  setField('sb-detail',      'lobster');
+  var slim   = buildQRPayload(collectStoryData());
+  var canvas = document.getElementById('sb-qr-canvas');
+  canvas.width = 0;
+  /* Step 1: encode to canvas */
+  var threw = false;
+  try { generateQR(slim, canvas, 200); } catch (e) { threw = true; }
+  assertFalse(threw, 'generateQR should not throw');
+  assertTrue(canvas.width > 0, 'canvas should be drawn');
+  /* Step 2: load from same slim string */
+  clearAllFields();
+  var r = loadStoryFromQRText(slim);
+  assertTrue(r.success, 'loadStoryFromQRText should succeed');
+  assertEqual(document.getElementById('sb-name').value,        'Sam',     'name matches after full pipeline');
+  assertEqual(document.getElementById('sb-destination').value, 'Boston',  'destination matches');
+  clearAllFields();
+});
+
+test('QR-RT04: buildQRPayload output → loadStoryFromQRText → all six fields match originals', function () {
+  clearAllFields();
+  setField('sb-name',        'Zoe');
+  setField('sb-visiting',    'Abuelo');
+  setField('sb-destination', 'Texas');
+  setField('sb-comfort',     'blanket');
+  setField('sb-calm',        'breathe');
+  setField('sb-detail',      'tacos');
+  var slim = buildQRPayload(collectStoryData());
+  clearAllFields();
+  var r = loadStoryFromQRText(slim);
+  assertTrue(r.success, 'success should be true');
+  assertEqual(document.getElementById('sb-name').value,        'Zoe',     'name');
+  assertEqual(document.getElementById('sb-visiting').value,    'Abuelo',  'visiting');
+  assertEqual(document.getElementById('sb-destination').value, 'Texas',   'destination');
+  assertEqual(document.getElementById('sb-comfort').value,     'blanket', 'comfort');
+  assertEqual(document.getElementById('sb-calm').value,        'breathe', 'calm');
+  assertEqual(document.getElementById('sb-detail').value,      'tacos',   'detail');
+  clearAllFields();
+});
+
+test('QR-RT05: validateQRPayload accepts output of buildQRPayload', function () {
+  clearAllFields();
+  fillAllFields();
+  var slim   = buildQRPayload(collectStoryData());
+  var parsed = JSON.parse(slim);
+  var v = validateQRPayload(parsed);
+  assertTrue(v.valid, 'validateQRPayload should accept buildQRPayload output');
+  assertEqual(v.reason, 'ok', 'reason should be ok');
+  clearAllFields();
+});
+
+/* ══════════════════════════════════════════════════════════════════
+   RENDER RESULTS
+══════════════════════════════════════════════════════════════════ */
+(function renderResults() {
+  var container = document.getElementById('results');
+  var passed = 0, failed = 0, skipped = 0;
+
+  results.forEach(function (r) {
+    if (r.status === 'pass')  { passed++;  }
+    if (r.status === 'fail')  { failed++;  }
+    if (r.status === 'skip')  { skipped++; }
+
+    var icon  = r.status === 'pass' ? '✅' : r.status === 'fail' ? '❌' : '⏭';
+    var badge = '<span class="test-badge ' + r.status + '">' + r.status.toUpperCase() + '</span>';
+    var detail = r.detail
+      ? '<div class="test-detail">' + r.detail.replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</div>'
+      : '';
+
+    container.insertAdjacentHTML('beforeend',
+      '<div class="test-row ' + r.status + '">' +
+        '<span class="test-icon">' + icon + '</span>' +
+        '<div><span class="test-name">' + r.name + '</span>' + detail + '</div>' +
+        badge +
+      '</div>');
+  });
+
+  var total      = passed + failed + skipped;
+  var applicable = passed + failed;
+  var confidence = applicable > 0 ? ((passed / applicable) * 100).toFixed(1) : '—';
+
+  document.getElementById('s-total').textContent = total;
+  document.getElementById('s-pass').textContent  = passed;
+  document.getElementById('s-fail').textContent  = failed;
+  document.getElementById('s-skip').textContent  = skipped;
+  document.getElementById('s-conf').textContent  = confidence + '%';
+
+  var confEl = document.getElementById('s-conf').parentElement;
+  if (failed === 0)                          { confEl.style.color = '#006B3C'; }
+  else if (parseFloat(confidence) >= 99)    { confEl.style.color = '#2E7CB8'; }
+  else                                       { confEl.style.color = '#C0392B'; }
+})();
+</script>
+
+<div class="footer-note">
+  <p>Calm Skies Travel — QR Validation Test Suite &nbsp;·&nbsp; Created by IBM Bob</p>
+  <p>All tests run in the browser with zero external dependencies.
+     Open this file in any modern browser to execute the suite.
+     Data stays on this device — no network calls are made.</p>
+</div>
+
+</body>
+</html>

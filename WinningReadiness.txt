@@ -1,0 +1,296 @@
+Winning readiness
+internal self-assessment against the official criteria
+
+Innovation & Creativity
+–
+/ 35
+
+Impact & Practicality
+–
+/ 35
+
+Technical Implementation
+–
+/ 30
+
+Total
+–
+/ 100
+
+Biggest scoring gap
+Set the scorecard scores
+
+Highest-ROI next action
+[the single action that most improves the score]
+
+Rules & eligibility gate
+must be green before building · unknowns in amber
+
+Operating mode
+PENDING OFFICIAL RULE
+A: outside tools permitted → coordination and validation outside Bob · B: Bob-only → outside assistance stops
+
+Official scoring: Innovation & Creativity 35 · Impact & Practicality 35 · Technical Implementation 30
+Yes
+IBM Community page + enablement deck
+Team eligible: at least one IBM Champion 2026 on the team (official rule)
+Confirmed
+Registered as 'Guild' (portal, track lifecycle). Marcelo confirms all members are registered (portal view showed 'Team size: 1'). EVERY registered member must submit the feedback form before upload.
+Outside AI tools allowed during the build?
+Risk accepted
+NOT answered by organizers. Risk accepted by Marcelo 2026-09-29: proceed with full disclosure; outside tools review/orchestrate only
+Pre-event config/scaffolding allowed (.bob rules, templates; no app code)?
+Yes
+Built from zero during the event; only .bob config and coaching tools pre-existed
+Submission format, deadline, repo/video required?
+Yes
+Portal: ZIP named as team: bob_sessions/, code_files/, README (4 sections), video; deadline Wed 30 Sep 3 PM ET
+Repository required (public / private / link)?
+Unknown
+—
+External APIs / MCP servers allowed?
+Unknown
+—
+Track chosen (lifecycle · Integration · Other)
+Yes
+Improve your product lifecycle with Bob
+5:30
+T+13:07
+Finished
+Score yourself and debrief.
+
+Plan
+
+Build
+
+Harden + package
+
+Record + submit
+
+Present
+
+
+3:003:154:004:254:455:005:30
+4:00 checkpoint · 4:25 freeze · 4:45 recording · 5:00 submission are internal targets. Official times come from the 2:30 briefing (the invite shows closing at 5:30).
+
+The project
+what, why, for whom
+
+Problem
+[The pain, in 2–3 sentences. Concrete, not abstract.]
+
+Solution
+[What we built, in 2–3 sentences.]
+
+Who it's for
+[The user or team who would adopt it next week.]
+
+Why it matters
+[Impact: risk reduced, time saved, compliance proven.]
+
+Simulated impact · not a customer result
+[Manual governance: N checks, M minutes, K systems → With the solution: X checks automated, Y human decisions, evidence generated automatically.]
+
+How it works
+architecture as built
+
+[Component 1]
+[role, file]
+
+→
+[Core component]
+[role, file]
+
+→
+[Component 3]
+[role, file]
+
+Potential enterprise integrations · NOT built
+[e.g. watsonx.governance evidence feed · GitHub checks · service management · identity · observability]
+
+Component
+File
+Responsibility
+[name]
+[path]
+[one line]
+Demo script
+90 seconds · preferred pattern, adapt to the announced challenge
+
+Show the risky request
+Expected: the judges see what could go wrong
+Bob attempts the action
+Expected: a real Bob tool call
+The control blocks it
+Expected: blocked with a specific rule and reason
+Ask Bob: "Explain why this was blocked"
+Expected: Bob states the rule and what's missing
+Bob identifies the missing condition
+Expected: e.g. no passing test evidence
+Bob corrects it
+Expected: a targeted fix (e.g. adds the test)
+Retry succeeds
+Expected: allowed
+Evidence record appears
+Expected: a new line with hash, preview and rule
+Tamper with the evidence
+Expected: one line edited in a copy
+Verification fails
+Expected: verify reports the first broken line
+Before each run: [reset command, e.g. npm run reset-data]
+
+How Bob created the solution
+0 of 14 features used
+
+Core Bob contribution
+[one sentence: what Bob built, diagnosed and fixed]
+
+Why Bob was essential
+[one sentence: why this couldn't exist without Bob, e.g. Bob's own hooks are the control point]
+
+Plan mode
+Agent mode
+Ask mode
+/init
+/review
+Custom mode
+Custom rules
+Skill
+Lifecycle hooks
+MCP server
+Subagents
+Checkpoints
+Literate coding
+Git / PR
+
+Time
+Mode
+What Bob did
+[HH:MM]
+[Plan]
+[one line; newest at the bottom; mirror the README usage log]
+Process tracker
+every task, start to finish
+
+Owner: Marcelo project lead: decides scope, architecture and trade-offs, triggers execution, presents · IBM Bob primary engineering implementation · Outside Bob coordination, independent validation, execution state (Mode A only), and pre-event strategy review (not in the execution path). Main progress counts phases A–G; post-event (H) is shown separately. Evidence must be concrete: a commit, a test count, or what's missing.
+
+#
+Task
+Owner
+When
+Status
+Evidence / notes
+A · Setup, before the event✓ 3 / 3 done
+A1
+Repo created, pushed, git identity set
+
+before
+Done
+repo MarceloNYUSA1/bobathon-nyc-2026 (private), identity set
+A2
+Bob signed in with Bobcoins; folder trusted; permissions set
+
+before
+Done
+Bob signed in, Pro 50 coins, folder trusted, allow-list verified in readiness check 4
+A3
+Rules, custom mode and hooks load in Bob (verified)
+
+before
+Done
+rules + rules-agent load (readiness R1); inbox hook active
+B · Understand the challenge · 2:30–3:00✓ 2 / 2 done
+B1
+Capture official rules, judging criteria, submission format and deadline
+
+2:30
+Done
+portal submission guidelines + enablement deck captured (docs/RULES-RECORD.md)
+B2
+Choose the challenge / track and confirm team roles
+
+2:45
+Done
+Calm Skies, track lifecycle, team Guild (roster to confirm)
+C · Plan · 3:00–3:15✓ 3 / 3 done
+C1
+Compare 2–3 approaches and choose one (Plan mode)
+
+3:00
+Done
+BOB-001 DECISION: static ES modules; React SPA and backend+DB rejected
+C2
+Write docs/plan.md: tasks, files, acceptance criteria, fallback
+
+3:10
+Done
+BOB-001 docs + 8 review fixes, commit c487978
+C3
+STATUS.html created from the template (tools/status.mjs), outside Bob, and project sections filled in
+
+3:15
+Done
+STATUS.html created outside Bob 08:45
+D · Build · 3:15–4:25 (plan tasks)✓ 19 / 19 done
+BOB-002
+Scaffold + index.html shell, serve.js, escapeHtml
+
+
+Done
+f61fd41 · 3/3 tests · real-browser axe 0 violations
+BOB-003
+Journey logic: My Flight Story
+
+
+Done
+b5c0a07 · content defects fixed in b6799f2
+BOB-004
+Journey logic: My Airport Journey
+
+
+Done
+234dc60 · wording fixed in b6799f2
+BOB-005
+Journey logic: My Calm Kit
+
+
+Done
+73024d6
+BOB-006
+Journey logic: Parent Checklist
+
+
+Done
+73024d6
+BOB-007
+Accessibility resources data
+
+
+Done
+697e430 · 2 dead links replaced in b6799f2
+BOB-008
+DOM render layer + wiring
+
+
+Done
+ff7b557 · XSS via UI blocked, 0 network, contrast ≥5.99:1
+BOB-009
+Integration test + demo scenario
+
+
+Done
+ff7b557 · 43/43, now 68/68
+BOB-002a
+Security fix: serve.js network exposure (found by a review outside Bob)
+
+
+Done
+d5367cc · LAN unreachable verified
+BOB-001B
+Docs reframe (option A)
+
+
+Done
+d83a6be · accuracy defects queued as BOB-001C
+BOB-002b
+Security fix: encoded path traversal (found by a probe outside Bob)
