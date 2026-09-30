@@ -252,17 +252,24 @@
         <span id="sb-status" class="sb-status" role="status" aria-live="polite"></span>
       </div>
       <!-- QR Load paste section — hidden until activated -->
-      <div id="sb-qr-paste-section" style="display:none;margin-top:12px;">
-        <label for="sb-qr-input" style="display:block;font-size:0.85rem;margin-bottom:6px;color:var(--muted);">
-          Paste the QR code text below, then click Load:
+      <div id="sb-qr-paste-section" style="display:none;margin-top:12px;padding:12px;background:var(--surface,#f7f8fa);border:1px solid var(--border,#e5e7eb);border-radius:8px;">
+        <p style="font-size:0.85rem;color:var(--muted);margin-bottom:10px;line-height:1.5;">
+          <strong>How to get the text from a QR code:</strong><br>
+          1. On a phone, open the <strong>Camera app</strong> and point it at the QR code on screen.<br>
+          2. Tap the notification or link that appears — it will show the story text.<br>
+          3. <strong>Copy all of that text</strong> and paste it into the box below.<br>
+          <em>The conversion happens on your phone — no app or internet needed.</em>
+        </p>
+        <label for="sb-qr-input" style="display:block;font-size:0.85rem;font-weight:600;margin-bottom:6px;">
+          Paste the QR code text here:
         </label>
-        <textarea id="sb-qr-input" rows="3"
-          style="width:100%;font-family:monospace;font-size:0.8rem;border:1px solid var(--border);border-radius:6px;padding:8px;resize:vertical;"
-          placeholder='{"v":1,"t":...}'
-          aria-label="Paste QR code text here"></textarea>
+        <textarea id="sb-qr-input" rows="4"
+          style="width:100%;font-family:monospace;font-size:0.8rem;border:1px solid var(--border,#e5e7eb);border-radius:6px;padding:8px;resize:vertical;"
+          placeholder='{"v":1,"t":1700000000,"f":{"n":"Maya",...}}'
+          aria-label="Paste the text from your QR code scanner here"></textarea>
         <button class="sb-btn sb-btn-qr" id="sb-qr-load-confirm" type="button"
                 style="margin-top:8px;" aria-describedby="sb-status">
-          Load from QR Text
+          Load Story from Pasted Text
         </button>
       </div>
       <div class="sb-autosave" id="sb-autosave-row" aria-live="polite"></div>
@@ -275,11 +282,16 @@
       <!-- QR code canvas — hidden until generated -->
       <div id="sb-qr-section" style="display:none;margin-top:16px;text-align:center;">
         <p style="font-size:0.85rem;color:var(--muted);margin-bottom:8px;">
-          Scan with any phone camera to load this story on another device.
+          Scan with a phone camera to share this story.
         </p>
         <canvas id="sb-qr-canvas" style="border-radius:8px;"></canvas>
         <p style="font-size:0.8rem;color:var(--muted);margin-top:6px;">
           No internet needed — the full story is encoded in this code.
+        </p>
+        <p style="font-size:0.78rem;color:var(--muted);margin-top:4px;font-style:italic;">
+          ⚠️ Note: only some phones can read this QR code as text.
+          iPhones and newer Android phones with a QR-aware camera app work best.
+          If your camera tries to open a website instead of showing text, it cannot read this format.
         </p>
       </div>
 

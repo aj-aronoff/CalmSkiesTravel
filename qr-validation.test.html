@@ -91,7 +91,13 @@
   <input id="sb-detail"      type="text" value=""/>
   <canvas id="sb-qr-canvas"></canvas>
   <button id="sb-qr-btn" type="button">Share via QR Code</button>
-  <textarea id="sb-qr-input"></textarea>
+  <!-- QR Load UI fixture — mirrors the real page elements -->
+  <button id="sb-qr-load-btn" type="button">Load Story from QR</button>
+  <div id="sb-qr-paste-section" style="display:none;">
+    <textarea id="sb-qr-input" placeholder='{"v":1,"t":1700000000,"f":{"n":"Maya",...}}'></textarea>
+    <button id="sb-qr-load-confirm" type="button">Load Story from Pasted Text</button>
+  </div>
+  <span id="sb-status"></span>
 </div>
 
 <!-- storybuilder.js provides: buildQRPayload, parseQRPayload, validateQRPayload,
@@ -939,6 +945,163 @@ test('QR-RT05: validateQRPayload accepts output of buildQRPayload', function () 
   assertTrue(v.valid, 'validateQRPayload should accept buildQRPayload output');
   assertEqual(v.reason, 'ok', 'reason should be ok');
   clearAllFields();
+});
+
+/* ══════════════════════════════════════════════════════════════════
+   GROUP 9 — Paste Box UI Tests
+   Tests the #sb-qr-load-btn toggle and the #sb-qr-paste-section
+   textarea confirm flow — the inline paste box on the left column.
+══════════════════════════════════════════════════════════════════ */
+document.getElementById('results').insertAdjacentHTML('beforeend',
+  '<h2>Group 9 — Paste Box UI Tests</h2>');
+
+/* Wire the toggle and confirm buttons in the fixture the same way index.html does */
+(function () {
+  var loadBtn     = document.getElementById('sb-qr-load-btn');
+  var pasteSection = document.getElementById('sb-qr-paste-section');
+  var confirmBtn  = document.getElementById('sb-qr-load-confirm');
+  var statusEl    = document.getElementById('sb-status');
+
+  function showStatusFixture(msg) {
+    if (statusEl) { statusEl.textContent = msg; }
+  }
+
+  if (loadBtn && pasteSection) {
+    loadBtn.addEventListener('click', function () {
+      pasteSection.style.display = pasteSection.style.display === 'none' ? 'block' : 'none';
+    });
+  }
+
+  if (confirmBtn) {
+    confirmBtn.addEventListener('click', function () {
+      var input  = document.getElementById('sb-qr-input');
+      var text   = input ? input.value : '';
+      var result = loadStoryFromQRText(text);
+      if (result.success) {
+        showStatusFixture('Story loaded from QR!');
+        if (pasteSection) { pasteSection.style.display = 'none'; }
+        if (input) { input.value = ''; }
+      } else {
+        showStatusFixture('Not a valid Calm Skies QR code.');
+      }
+    });
+  }
+}());
+
+test('QR-UI01: paste section is hidden on page load', function () {
+  var section = document.getElementById('sb-qr-paste-section');
+  assertEqual(section.style.display, 'none', 'paste section starts hidden');
+});
+
+test('QR-UI02: clicking Load Story from QR reveals the paste section', function () {
+  var loadBtn = document.getElementById('sb-qr-load-btn');
+  var section = document.getElementById('sb-qr-paste-section');
+  section.style.display = 'none'; /* ensure hidden first */
+  loadBtn.click();
+  assertEqual(section.style.display, 'block', 'paste section is visible after click');
+  section.style.display = 'none'; /* reset */
+});
+
+test('QR-UI03: clicking Load Story from QR a second time hides the paste section again', function () {
+  var loadBtn = document.getElementById('sb-qr-load-btn');
+  var section = document.getElementById('sb-qr-paste-section');
+  section.style.display = 'none';
+  loadBtn.click(); /* open */
+  loadBtn.click(); /* close */
+  assertEqual(section.style.display, 'none', 'paste section hidden after second click');
+});
+
+test('QR-UI04: textarea starts empty when paste section opens', function () {
+  var input = document.getElementById('sb-qr-input');
+  input.value = ''; /* ensure clean */
+  assertEqual(input.value, '', 'textarea is empty before any paste');
+});
+
+test('QR-UI05: pasting valid slim JSON and clicking confirm populates all six fields', function () {
+  clearAllFields();
+  var slim  = '{"v":1,"t":1700000000,"f":{"n":"Aria","vi":"Nana","d":"Seattle","co":"bunny","ca":"hum","de":"ferry"}}';
+  var input = document.getElementById('sb-qr-input');
+  var confirmBtn = document.getElementById('sb-qr-load-confirm');
+  var section    = document.getElementById('sb-qr-paste-section');
+  section.style.display = 'block';
+  input.value = slim;
+  confirmBtn.click();
+  assertEqual(document.getElementById('sb-name').value,        'Aria',    'name populated via confirm');
+  assertEqual(document.getElementById('sb-visiting').value,    'Nana',    'visiting populated');
+  assertEqual(document.getElementById('sb-destination').value, 'Seattle', 'destination populated');
+  assertEqual(document.getElementById('sb-comfort').value,     'bunny',   'comfort populated');
+  assertEqual(document.getElementById('sb-calm').value,        'hum',     'calm populated');
+  assertEqual(document.getElementById('sb-detail').value,      'ferry',   'detail populated');
+  clearAllFields();
+});
+
+test('QR-UI06: after successful load the paste section is hidden and textarea is cleared', function () {
+  var slim  = '{"v":1,"t":1700000000,"f":{"n":"Leo","vi":"Opa","d":"Denver","co":"blanket","ca":"breathe","de":"mountains"}}';
+  var input = document.getElementById('sb-qr-input');
+  var confirmBtn = document.getElementById('sb-qr-load-confirm');
+  var section    = document.getElementById('sb-qr-paste-section');
+  section.style.display = 'block';
+  input.value = slim;
+  confirmBtn.click();
+  assertEqual(section.style.display, 'none',  'paste section hidden after successful load');
+  assertEqual(input.value,           '',       'textarea cleared after successful load');
+  clearAllFields();
+});
+
+test('QR-UI07: pasting invalid text and clicking confirm leaves paste section open', function () {
+  var input      = document.getElementById('sb-qr-input');
+  var confirmBtn = document.getElementById('sb-qr-load-confirm');
+  var section    = document.getElementById('sb-qr-paste-section');
+  section.style.display = 'block';
+  input.value = '{this is not valid json}';
+  confirmBtn.click();
+  assertEqual(section.style.display, 'block', 'paste section stays open on bad input');
+  input.value = '';
+  section.style.display = 'none'; /* reset */
+});
+
+test('QR-UI08: pasting full save-file JSON (wrong format) is rejected — fields unchanged', function () {
+  clearAllFields();
+  var fullJson = '{"schemaVersion":1,"savedAt":"2024-01-01T00:00:00.000Z","fields":{"name":"Maya","visiting":"Grandma","destination":"Florida","comfort":"blanket","calm":"breathe","detail":"pool"}}';
+  var input      = document.getElementById('sb-qr-input');
+  var confirmBtn = document.getElementById('sb-qr-load-confirm');
+  var section    = document.getElementById('sb-qr-paste-section');
+  section.style.display = 'block';
+  input.value = fullJson;
+  confirmBtn.click();
+  assertEqual(document.getElementById('sb-name').value, '', 'fields unchanged after bad paste');
+  assertEqual(section.style.display, 'block', 'paste section stays open on rejection');
+  input.value = '';
+  section.style.display = 'none'; /* reset */
+});
+
+test('QR-UI09: pasting empty string and clicking confirm leaves fields unchanged', function () {
+  clearAllFields();
+  setField('sb-name', 'ShouldStay');
+  var input      = document.getElementById('sb-qr-input');
+  var confirmBtn = document.getElementById('sb-qr-load-confirm');
+  var section    = document.getElementById('sb-qr-paste-section');
+  section.style.display = 'block';
+  input.value = '';
+  confirmBtn.click();
+  assertEqual(document.getElementById('sb-name').value, 'ShouldStay', 'fields unchanged after empty paste');
+  input.value = '';
+  section.style.display = 'none';
+  clearAllFields();
+});
+
+test('QR-UI10: textarea placeholder text is present and descriptive', function () {
+  var input = document.getElementById('sb-qr-input');
+  assertTrue(input !== null, 'textarea exists');
+  var ph = input.getAttribute('placeholder') || '';
+  assertTrue(ph.length > 0, 'placeholder is not empty');
+});
+
+test('QR-UI11: load button, paste section, textarea and confirm button all exist in DOM', function () {
+  assertTrue(document.getElementById('sb-qr-load-btn')     !== null, '#sb-qr-load-btn exists');
+  assertTrue(document.getElementById('sb-qr-paste-section') !== null, '#sb-qr-paste-section exists');
+  assertTrue(document.getElementById('sb-qr-input')         !== null, '#sb-qr-input exists');
+  assertTrue(document.getElementById('sb-qr-load-confirm')  !== null, '#sb-qr-load-confirm exists');
 });
 
 /* ══════════════════════════════════════════════════════════════════
