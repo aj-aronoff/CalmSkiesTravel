@@ -364,6 +364,66 @@ test('validateStoryData rejects number at root', function() {
   assertFalse(validateStoryData(42).valid, 'number root');
 });
 
+/* ══ GROUP 9 — XSS Safety (serialisation layer) ══ */
+console.log('\nGroup 9 — XSS Safety (serialisation layer)');
+test('<script> tag survives round-trip as literal string', function() {
+  clearAllFields();
+  setField('sb-name','<script>alert(1)</script>');
+  setField('sb-visiting','G'); setField('sb-destination','D');
+  setField('sb-comfort','C'); setField('sb-calm','Ca'); setField('sb-detail','De');
+  var p = parseStoryJSON(serialiseStoryData(collectStoryData()));
+  assertEqual(p.fields.name,'<script>alert(1)</script>','script tag verbatim');
+  clearAllFields();
+});
+test('<img onerror> payload survives round-trip as literal string', function() {
+  clearAllFields();
+  setField('sb-name','<img src=x onerror=alert(1)>');
+  setField('sb-visiting','G'); setField('sb-destination','D');
+  setField('sb-comfort','C'); setField('sb-calm','Ca'); setField('sb-detail','De');
+  var p = parseStoryJSON(serialiseStoryData(collectStoryData()));
+  assertEqual(p.fields.name,'<img src=x onerror=alert(1)>','img onerror verbatim');
+  clearAllFields();
+});
+test('ampersand and angle brackets survive round-trip verbatim', function() {
+  clearAllFields();
+  setField('sb-name','Tom & Jerry <best>');
+  setField('sb-visiting','G'); setField('sb-destination','D');
+  setField('sb-comfort','C'); setField('sb-calm','Ca'); setField('sb-detail','De');
+  var p = parseStoryJSON(serialiseStoryData(collectStoryData()));
+  assertEqual(p.fields.name,'Tom & Jerry <best>','ampersand and angle brackets');
+  clearAllFields();
+});
+test('javascript: URI survives round-trip as literal string', function() {
+  clearAllFields();
+  setField('sb-visiting','javascript:alert(1)');
+  setField('sb-name','N'); setField('sb-destination','D');
+  setField('sb-comfort','C'); setField('sb-calm','Ca'); setField('sb-detail','De');
+  var p = parseStoryJSON(serialiseStoryData(collectStoryData()));
+  assertEqual(p.fields.visiting,'javascript:alert(1)','js uri verbatim');
+  clearAllFields();
+});
+test('XSS payload in every field survives round-trip', function() {
+  clearAllFields();
+  var xss = '"><script>x</script>';
+  setField('sb-name',xss); setField('sb-visiting',xss); setField('sb-destination',xss);
+  setField('sb-comfort',xss); setField('sb-calm',xss); setField('sb-detail',xss);
+  var p = parseStoryJSON(serialiseStoryData(collectStoryData()));
+  Object.values(p.fields).forEach(function(v) {
+    assertEqual(v, xss, 'all fields verbatim');
+  });
+  clearAllFields();
+});
+test('populateStoryFields sets values from XSS payload without executing', function() {
+  clearAllFields();
+  var payload = { fields:{ name:'<script>bad()</script>', visiting:'<b>bold</b>',
+    destination:'D', comfort:'C', calm:'Ca', detail:'De' }};
+  var result = populateStoryFields(payload);
+  assertEqual(result.success, true, 'success');
+  assertEqual(elements['sb-name'].value, '<script>bad()</script>', 'name stored as text');
+  assertEqual(elements['sb-visiting'].value, '<b>bold</b>', 'visiting stored as text');
+  clearAllFields();
+});
+
 /* ══ SUMMARY ══ */
 var total = passed + failed;
 var confidence = total > 0 ? ((passed / total) * 100).toFixed(1) : '0.0';

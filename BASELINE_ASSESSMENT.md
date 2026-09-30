@@ -36,13 +36,11 @@ At the start of the project, A.J. Aronoff provided exactly **three** source file
 ---
 
 ### 3. `contract.txt`
-**Type:** Plain text — IONOS hosting confirmation email  
-**Provided by:** A.J. Aronoff  
-**Purpose:** The confirmation email from IONOS (Web Hosting Provider) confirming A.J.'s purchase of the web hosting plan and domain registrations. Key details:
-- **Contract ID:** 113830291
-- **Hosting plan:** IONOS Web Hosting Plus ($1/month promotional, then $14/month)
+**Type:** Plain text — IONOS hosting confirmation email
+**Provided by:** A.J. Aronoff
+**Purpose:** The confirmation email from IONOS (Web Hosting Provider) confirming A.J.'s purchase of the web hosting plan and domain registrations. This file is excluded from the public repository via `.gitignore`. Key technology implications:
+- **Hosting plan:** IONOS Web Hosting Plus — static files only
 - **Domains registered:** `calmskiestravel.com`, `calmskiestravel.info`, `calmskiestravel.cloud`
-- **Domain Guard:** purchased for privacy protection
 - **Technology implication:** Static files only — no server-side language. Confirmed that pure HTML/CSS/JavaScript is the correct and only technology choice.
 - **HTTPS:** IONOS includes free Let's Encrypt SSL — no additional purchase needed.
 
@@ -73,7 +71,7 @@ The following is a complete record of every step taken during Session 1. Steps a
 | Prompt | User Correction / Direction |
 |--------|-----------------------------|
 | 2 | User clarified: **both** print-ready AND on-screen story format (not one or the other) |
-| 7 | User clarified: export should be **both** JSON file AND QR code (not one format) |
+| 7 | User clarified: export should support JSON file download; QR code noted as a future enhancement |
 | 11 | User directed: "Story Builder" tab must come **before** "Before You Go," not after |
 | 11 | User directed: "When It Gets Hard" must come **before** "Hello & Thank You" |
 | 11 | User clarified: meltdown section needs BOTH parent suggestions AND a child-facing customizable social story |

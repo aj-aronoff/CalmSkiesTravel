@@ -97,31 +97,21 @@ Social Story Card (live update, no submit)
 
 **Data flow:**
 - All data lives in the form's DOM nodes only
-- Optionally saved to `localStorage` (browser only)
 - No data transmitted to any server at any point
 
 ### 4. Local Data Layer
 
 ```
-localStorage (browser only)
-│
-├── child.name
-├── child.destination
-├── child.comfort_item
-├── child.companions
-├── story.sentences[]
-├── checklist.gobag{}
-└── review.trips[]
+Current implementation:
+  Data lives in form DOM nodes only — not persisted between sessions.
+  JSON download  → parent saves file locally via browser download
+  JSON upload    → FileReader API re-populates form fields (browser only)
 
-Export paths:
-  ├── JSON download  → parent saves file locally
-  └── QR code        → encoded JSON, shareable by camera
+Future (not yet implemented):
+  localStorage persistence — would allow the form to reload between visits
+  QR code export — would encode the JSON for camera-scannable sharing
 ```
 
-**Import path:**
-```
-Parent uploads JSON file → FileReader API (browser) → re-populates all form fields
-```
 No network. No server. No account.
 
 ### 5. Print Architecture
@@ -214,10 +204,10 @@ CalmSkiesTravel/
 | Build pipeline | None | Parent should be able to open the file and see the site |
 | Font delivery | Google Fonts CSS import | Reliable; fallback to system sans-serif if offline |
 | Icon format | PNG (from PPTX) + inline SVG | PNGs extracted from presentation; SVGs used for complex icons |
-| Data persistence | `localStorage` | Browser-native; no server needed; user controls their data |
-| QR code generation | qrcode.js (open source) | Lightweight; no server needed; encodes JSON profile |
+| Data persistence | None (Future: localStorage) | Data lives in form DOM only for current implementation; localStorage is a planned optional enhancement |
+| QR code generation | None (Future: qrcode.js) | Not yet implemented; planned as an optional enhancement |
 | HTTPS | IONOS Let's Encrypt SSL | Free with IONOS plan; no configuration cost |
-| Hosting | IONOS Web Hosting Plus | Already purchased by A.J.; static file support confirmed |
+| Hosting | IONOS Web Hosting Plus / GitHub Pages | Static file hosting; deployed via GitHub Pages |
 
 ---
 
@@ -241,10 +231,7 @@ Parent opens calmskiestravel.com
         │
         ├── Parent saves profile
         │       │
-        │       └── JSON written to localStorage (browser only)
-        │                │
-        │                ├── "Download JSON" → Blob download (no upload)
-        │                └── "Generate QR" → qrcode.js encodes JSON → canvas (browser only)
+        │       └── "Download JSON" → Blob download to device (no server upload)
         │
         └── Parent prints story / checklist
                 │
@@ -293,7 +280,7 @@ A.J.'s computer                     IONOS Web Hosting Plus
 | Child data exposure | Zero server storage — data lives only in user's browser |
 | Third-party script injection | No CDN scripts; all JS is local or inline |
 | Photo upload exposure | `FileReader` API only — photo never leaves browser |
-| XSS via form inputs | Story Builder uses `textContent` assignment (not `innerHTML`) for user-provided values |
+| XSS via form inputs | Story Builder uses `createTextNode` / `textContent` (not `innerHTML`) for all user-provided values; verified by test suite Group 10 |
 | HTTPS downgrade | IONOS SSL activated; HSTS can be added via `.htaccess` if needed |
 | Domain hijacking | IONOS Domain Guard purchased for all three domains |
 

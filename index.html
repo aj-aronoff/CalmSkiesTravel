@@ -706,6 +706,13 @@
 </footer>
 
 <!-- ═══════════════════════════════════════════
+     STORY BUILDER MODULE
+     Single source of truth for save/load/validate.
+     Tested by run-tests.js and storybuilder.test.html.
+════════════════════════════════════════════ -->
+<script src="storybuilder.js"></script>
+
+<!-- ═══════════════════════════════════════════
      JAVASCRIPT — Tab controller
      Handles: click, arrow keys, hash-based
      deep-linking, browser back/forward
@@ -816,8 +823,34 @@
     return el ? el.value.trim() : '';
   }
 
-  function ph(text, fallback) {
-    return text || ('<span class="placeholder">' + fallback + '</span>');
+  /**
+   * Return a DOM node for a user-supplied value.
+   * If the value is non-empty, returns a safe Text node (never parsed as HTML).
+   * If empty, returns a <span class="placeholder"> element (static, no user data).
+   */
+  function phNode(text, fallback) {
+    if (text) {
+      return document.createTextNode(text);
+    }
+    var span = document.createElement('span');
+    span.className = 'placeholder';
+    span.textContent = fallback;
+    return span;
+  }
+
+  /**
+   * Append a sequence of mixed strings and DOM nodes to a parent element.
+   * Strings are appended as safe Text nodes; nodes are appended directly.
+   */
+  function appendParts(parent, parts) {
+    for (var i = 0; i < parts.length; i++) {
+      var part = parts[i];
+      if (typeof part === 'string') {
+        parent.appendChild(document.createTextNode(part));
+      } else {
+        parent.appendChild(part);
+      }
+    }
   }
 
   function updateStory() {
@@ -828,22 +861,30 @@
     var calm        = val('sb-calm');
     var detail      = val('sb-detail');
 
+    /* Each entry is an array of strings and phNode() results.
+       Strings are rendered as plain text nodes — never parsed as HTML.
+       User values go through phNode(), which uses createTextNode for non-empty
+       values, guaranteeing no user input ever reaches innerHTML. */
     var lines = [
-      'I am ' + ph(name,'[child\'s name]') + '. I am going on a trip!',
-      'I am flying to ' + ph(destination,'[destination]') + ' to visit ' + ph(visiting,'[who we are visiting]') + '.',
-      'Flying is an adventure. I know what is going to happen.',
-      'I have my ' + ph(comfort,'[comfort item]') + ' with me the whole time.',
-      'When I get to the airport, I will stay close to the person I am with.',
-      'Security is like a doorway. I walk through and I am on the other side.',
-      'On the plane I will put on my headphones and I can breathe slowly.',
-      'If I feel worried, I can ' + ph(calm,'[what helps me feel calm]') + '.',
-      'When we land, I will see ' + ph(visiting,'[who we are visiting]') + '!',
-      'I am excited about ' + ph(detail,'[one exciting detail]') + '. I did it — I am amazing! ✈'
+      ['I am ', phNode(name,"[child's name]"), '. I am going on a trip!'],
+      ['I am flying to ', phNode(destination,'[destination]'), ' to visit ', phNode(visiting,'[who we are visiting]'), '.'],
+      ['Flying is an adventure. I know what is going to happen.'],
+      ['I have my ', phNode(comfort,'[comfort item]'), ' with me the whole time.'],
+      ['When I get to the airport, I will stay close to the person I am with.'],
+      ['Security is like a doorway. I walk through and I am on the other side.'],
+      ['On the plane I will put on my headphones and I can breathe slowly.'],
+      ['If I feel worried, I can ', phNode(calm,'[what helps me feel calm]'), '.'],
+      ['When we land, I will see ', phNode(visiting,'[who we are visiting]'), '!'],
+      ['I am excited about ', phNode(detail,'[one exciting detail]'), '. I did it \u2014 I am amazing! \u2708']
     ];
 
     for (var i = 0; i < lines.length; i++) {
       var el = document.getElementById('sc-line' + (i + 1));
-      if (el) { el.innerHTML = lines[i]; }
+      if (el) {
+        /* Clear existing content safely, then rebuild from DOM nodes only */
+        while (el.firstChild) { el.removeChild(el.firstChild); }
+        appendParts(el, lines[i]);
+      }
     }
   }
 
@@ -861,50 +902,14 @@
      Nothing is ever sent to any server.
   ════════════════════════════════════════ */
 
-  /** Collect the six Story Builder field values into a plain object. */
-  function collectStoryData() {
-    return {
-      schemaVersion: 1,
-      savedAt: new Date().toISOString(),
-      fields: {
-        name:        val('sb-name'),
-        visiting:    val('sb-visiting'),
-        destination: val('sb-destination'),
-        comfort:     val('sb-comfort'),
-        calm:        val('sb-calm'),
-        detail:      val('sb-detail')
-      }
-    };
-  }
-
-  /** Populate the Story Builder fields from a plain object.
-   *  Returns true on success, false if required keys are missing. */
-  function populateStoryFields(data) {
-    if (!data || typeof data !== 'object') { return false; }
-    var fields = data.fields;
-    if (!fields || typeof fields !== 'object') { return false; }
-    var map = {
-      'sb-name':        'name',
-      'sb-visiting':    'visiting',
-      'sb-destination': 'destination',
-      'sb-comfort':     'comfort',
-      'sb-calm':        'calm',
-      'sb-detail':      'detail'
-    };
-    Object.keys(map).forEach(function (elId) {
-      var el = document.getElementById(elId);
-      if (el && typeof fields[map[elId]] === 'string') {
-        el.value = fields[map[elId]];
-      }
-    });
-    updateStory();
-    return true;
-  }
+  /* collectStoryData, validateStoryData, populateStoryFields,
+     serialiseStoryData, parseStoryJSON are provided by storybuilder.js
+     (loaded above). No duplicate definitions here. */
 
   /** Trigger a browser download of the story data as a .json file. */
   function saveStoryToFile() {
     var data   = collectStoryData();
-    var json   = JSON.stringify(data, null, 2);
+    var json   = serialiseStoryData(data);
     var blob   = new Blob([json], { type: 'application/json' });
     var url    = URL.createObjectURL(blob);
     var a      = document.createElement('a');
@@ -935,14 +940,15 @@
     }
     var reader = new FileReader();
     reader.onload = function (e) {
-      try {
-        var data = JSON.parse(e.target.result);
-        if (populateStoryFields(data)) {
+      var data = parseStoryJSON(e.target.result);
+      if (data) {
+        var result = populateStoryFields(data, document, updateStory);
+        if (result.success) {
           showStatus('✅ Story loaded — fields are filled in!');
         } else {
           showStatus('⚠️ File loaded but fields could not be read. Was this saved by Calm Skies Travel?');
         }
-      } catch (err) {
+      } else {
         showStatus('⚠️ Could not read file. Please choose a valid JSON file.');
       }
     };

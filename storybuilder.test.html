@@ -718,6 +718,100 @@ test('validateStoryData makes no network requests', function () {
 });
 
 /* ══════════════════════════════════════════════════════════════════
+   GROUP 10 — XSS SAFE DOM RENDERING
+   These tests verify the production rendering pattern used in index.html:
+   user values must never reach innerHTML — they must render as plain text.
+   The phNode / appendParts helpers below are identical in logic to the
+   versions in index.html so this group exercises the shipped pattern.
+══════════════════════════════════════════════════════════════════ */
+document.getElementById('results').insertAdjacentHTML('beforeend',
+  '<h2>Group 10 — XSS Safe DOM Rendering</h2>');
+
+/* ── Minimal test fixture: a hidden <p> element we render story lines into ── */
+(function () {
+  var fixture = document.getElementById('fixture');
+  var testPara = document.createElement('p');
+  testPara.id = 'xss-test-line';
+  fixture.appendChild(testPara);
+})();
+
+/* ── Replicate the production rendering helpers from index.html ── */
+function phNode_test(text, fallback) {
+  if (text) {
+    return document.createTextNode(text);
+  }
+  var span = document.createElement('span');
+  span.className = 'placeholder';
+  span.textContent = fallback;
+  return span;
+}
+function appendParts_test(parent, parts) {
+  while (parent.firstChild) { parent.removeChild(parent.firstChild); }
+  for (var i = 0; i < parts.length; i++) {
+    var part = parts[i];
+    if (typeof part === 'string') {
+      parent.appendChild(document.createTextNode(part));
+    } else {
+      parent.appendChild(part);
+    }
+  }
+}
+
+test('<script> tag in name renders as literal text, not executed HTML', function () {
+  var el = document.getElementById('xss-test-line');
+  var name = '<script>alert(1)</script>';
+  appendParts_test(el, ['I am ', phNode_test(name, "[child's name]"), '. I am going on a trip!']);
+  assertEqual(el.textContent, "I am <script>alert(1)</script>. I am going on a trip!", 'textContent is literal');
+  /* innerHTML must not contain an unescaped opening script tag */
+  assertFalse(el.innerHTML.indexOf('<script>') !== -1, 'innerHTML contains no live <script>');
+});
+
+test('<img onerror> in name renders as literal text', function () {
+  var el = document.getElementById('xss-test-line');
+  var name = '<img src=x onerror=alert(1)>';
+  appendParts_test(el, ['I am ', phNode_test(name, "[child's name]"), '. I am going on a trip!']);
+  assertEqual(el.textContent, 'I am <img src=x onerror=alert(1)>. I am going on a trip!', 'textContent is literal');
+  assertFalse(el.innerHTML.indexOf('<img') !== -1, 'innerHTML contains no live img tag');
+});
+
+test('HTML bold tag in destination renders as literal text', function () {
+  var el = document.getElementById('xss-test-line');
+  var dest = '<b>Florida</b>';
+  appendParts_test(el, ['Flying to ', phNode_test(dest, '[destination]'), '.']);
+  assertEqual(el.textContent, 'Flying to <b>Florida</b>.', 'textContent is literal');
+  assertFalse(el.innerHTML.indexOf('<b>') !== -1, 'no live bold tag in innerHTML');
+});
+
+test('empty field renders placeholder span, not user content', function () {
+  var el = document.getElementById('xss-test-line');
+  appendParts_test(el, ['I am ', phNode_test('', "[child's name]"), '.']);
+  var spans = el.querySelectorAll('span.placeholder');
+  assertTrue(spans.length === 1, 'one placeholder span present');
+  assertEqual(spans[0].textContent, "[child's name]", 'placeholder text correct');
+});
+
+test('XSS payload in comfort item renders as literal text', function () {
+  var el = document.getElementById('xss-test-line');
+  var comfort = '"><svg/onload=alert(1)>';
+  appendParts_test(el, ['I have my ', phNode_test(comfort, '[comfort item]'), ' with me.']);
+  assertEqual(el.textContent, 'I have my "><svg/onload=alert(1)> with me.', 'textContent literal');
+  assertFalse(el.innerHTML.indexOf('<svg') !== -1, 'no live svg tag');
+});
+
+test('normal text renders correctly through safe path', function () {
+  var el = document.getElementById('xss-test-line');
+  appendParts_test(el, ['I am ', phNode_test('Maya', "[child's name]"), '. I am going on a trip!']);
+  assertEqual(el.textContent, "I am Maya. I am going on a trip!", 'normal text correct');
+});
+
+test('special characters & and > render as literal characters', function () {
+  var el = document.getElementById('xss-test-line');
+  var name = 'Tom & Jerry > others';
+  appendParts_test(el, ['I am ', phNode_test(name, "[child's name]"), '.']);
+  assertEqual(el.textContent, 'I am Tom & Jerry > others.', 'special chars literal');
+});
+
+/* ══════════════════════════════════════════════════════════════════
    RENDER RESULTS
 ══════════════════════════════════════════════════════════════════ */
 (function renderResults() {

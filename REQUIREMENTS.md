@@ -13,7 +13,7 @@
 | **Owner** | A.J. Aronoff |
 | **Primary audience** | Autistic children and their parents / caregivers |
 | **Secondary audience** | Autism support groups, therapists, school staff, grandparents |
-| **Hosting** | IONOS Web Hosting Plus (Contract ID: 113830291) |
+| **Hosting** | IONOS Web Hosting Plus / GitHub Pages |
 | **Technology** | Pure static HTML, CSS, JavaScript — no server-side language |
 | **HTTPS** | IONOS free Let's Encrypt SSL |
 | **Credit** | "Created by IBM Bob" — required on every page and every printable |
@@ -58,41 +58,31 @@ The site shall contain the following tabs in the following order:
 - **REQ-SB-03:** The story shall update live as the parent types (no submit button required to see the story).
 - **REQ-SB-04:** The social story shall use first-person, warm language ("I am [name]. I am going to [place].").
 - **REQ-SB-05:** The story shall be printable as a single-page print-ready layout.
-- **REQ-SB-06:** The story shall also be viewable as an on-screen storybook. The parent chooses.
-- **REQ-SB-07:** The story shall be exportable as part of the child's JSON profile.
-- **REQ-SB-08:** Line-art illustrations shall accompany each story beat.
-- **REQ-SB-09:** The parent shall be able to customize / edit any sentence in the generated story.
+- **REQ-SB-06:** The story shall update live in an on-screen story card as the parent types.
+- **REQ-SB-07:** The story shall be exportable as a JSON file download.
 
 ### 1.5 Data Portability (No Server Storage)
 - **REQ-DATA-01:** No child data shall ever be stored on the server. This is an absolute, non-negotiable requirement.
-- **REQ-DATA-02:** All profile data shall live in the parent's browser (localStorage) only.
-- **REQ-DATA-03:** The parent shall be able to export the child's profile as a JSON file download.
-- **REQ-DATA-04:** The parent shall be able to import a previously saved JSON file to re-populate all forms.
-- **REQ-DATA-05:** The profile shall also be exportable as a QR code.
-- **REQ-DATA-06:** The QR code shall be shareable — e.g., scan-to-populate for grandparents or caregivers.
+- **REQ-DATA-03:** The parent shall be able to export the child's story as a JSON file download.
+- **REQ-DATA-04:** The parent shall be able to import a previously saved JSON file to re-populate all form fields.
 - **REQ-DATA-07:** No network calls shall be made for profile data. This shall be confirmed in code comments.
 
-### 1.6 Hello & Thank You
-- **REQ-HTY-01:** A Hello & Thank You section shall exist for pre-trip and post-trip messages.
-- **REQ-HTY-02:** The output shall be copy-to-email friendly — formatted text the parent can paste.
-- **REQ-HTY-03:** Sending shall be quick and easy — minimal form fields, instant output.
-- **REQ-HTY-04:** Output shall also be printable as a greeting card.
-- **REQ-HTY-05:** Optional: parent uploads a photo from their device (stays in browser only, never sent to server).
+---
 
-### 1.7 Resources & References
-- **REQ-REF-01:** The references page shall contain **only** verified, approved sources.
-- **REQ-REF-02:** Trust tiers: Government websites (Tier 1 ✅ fully trusted), Airline websites (Tier 2 ✅ fully trusted), All other sources (Tier 3 — must score ≥90% confidence or be excluded).
-- **REQ-REF-03:** No disclaimer is required — the page is clean and trustworthy-feeling.
-- **REQ-REF-04:** A.J. must personally approve the final reference list before it goes live.
-- **REQ-REF-05:** No hallucinated references — child safety is paramount.
+## 1.6 Future Features — Designed but Not Yet Implemented
 
-### 1.8 Our Trip Review
-- **REQ-OTR-01:** A Trip Review page shall allow parent and child to reflect on how the trip went.
-- **REQ-OTR-02:** Parent reflection: what worked, triggers noted, go-bag changes, airline/airport tips.
-- **REQ-OTR-03:** Child reflection: simple first-person prompts ("One thing I liked was ___").
-- **REQ-OTR-04:** Reviews shall be saved to the local JSON profile and QR code, keyed by destination.
-- **REQ-OTR-05:** A printable "Our Trip Memory" card shall be available for the child as a positive keepsake.
-- **REQ-OTR-06:** Credit: suggested by A.J.'s wife.
+> These are confirmed design goals. They are not present in the current running application and should not be described as implemented. They are listed here to preserve the intent for future development.
+
+| Requirement ID | Feature | Notes |
+|---|---|---|
+| REQ-DATA-02 | localStorage persistence — auto-reload form between sessions | Optional enhancement; see update-plan.md |
+| REQ-DATA-05 | QR code export — encode story as scannable QR | Optional enhancement; see update-plan.md |
+| REQ-DATA-06 | QR code sharing — scan-to-populate for caregivers | Depends on REQ-DATA-05 |
+| REQ-SB-08 | Line-art illustrations per story beat | Future visual enhancement |
+| REQ-SB-09 | Editable individual sentences in the generated story | Future UX enhancement |
+| REQ-HTY-01–05 | Hello & Thank You section | Full section not yet built |
+| REQ-REF-01–05 | Resources & References page | Full page not yet built |
+| REQ-OTR-01–06 | Our Trip Review page | Full page not yet built; suggested by A.J.'s wife |
 
 ---
 

@@ -1,0 +1,178 @@
+
+Team Guild · IBM Bobathon
+Calm Skies Journey Builder
+Engineering Assessment & Project Direction
+Review of the original Calm Skies reference implementation and the engineering decision for the Team Guild Bobathon submission.
+
+PROJECT: Calm Skies Journey Builder
+TEAM: Team Guild
+STATUS: Active Bobathon Development
+PURPOSE: Team Review
+Executive Decision
+The original Calm Skies work provides the product concept, domain knowledge, accessibility research and important requirements. It should not, however, be submitted as the Team Guild implementation.
+
+Team Guild is engineering a new application during the Bobathon using those requirements as product input while applying stronger architecture, security, privacy, accessibility, testing and software-development practices.
+
+01 · Purpose
+Why this assessment was performed
+AJ brought Team Guild a meaningful problem: helping autistic children and their caregivers prepare for air travel with greater predictability, clarity and confidence.
+
+His Calm Skies materials provide valuable product thinking, accessibility concepts, social-story research and a reference implementation showing the intended experience.
+
+The question was not: “Is AJ's idea good?”
+
+The idea is valuable.
+
+The question was: “Is the existing implementation technically suitable to serve as the final Team Guild Bobathon application?”
+Our conclusion is no. The correct path is to preserve the requirements and product insights while building a new, technically defensible implementation.
+
+02 · What We Are Preserving
+The strongest parts of the original Calm Skies work
+Product/domain input
+Disposition
+Calm Skies concept
+Preserve
+Social-story approach
+Preserve
+Parent + child perspectives
+Preserve
+Sensory preparation concepts
+Preserve
+Predictable travel sequencing
+Preserve
+Accessibility research
+Preserve and validate
+AJ's contribution remains fundamental: Calm Skies concept, product requirements, accessibility research, reference materials and domain input.
+03 · Technical Findings
+Why the existing implementation should not be our submission baseline
+Severity
+Finding
+Engineering impact
+CRITICAL
+User input rendered through innerHTML
+User-controlled Story Builder information is inserted into HTML without the protection described by the project's architecture, creating an XSS risk.
+CRITICAL
+Imported JSON reaches the same rendering path
+A shared story/profile file can populate the same fields, so imported files must be treated as untrusted input.
+CRITICAL
+Tests do not exercise production implementation
+Tests exercise storybuilder.js while the running page uses separate inline logic. Passing tests therefore do not prove the shipped application is correct.
+HIGH
+Documentation and implementation diverge
+Several documents describe functionality not present in the running application.
+HIGH
+Accessibility conclusions exceed evidence
+Numerous WCAG criteria are marked met without sufficient supporting validation evidence.
+HIGH
+Public repository information
+A contract identifier appears in public documentation and should be removed and reviewed in repository history.
+Most important finding:
+
+A project can report that all automated tests pass while the actual website still contains a defect if the tests exercise a different copy of the application logic. Team Guild needs to demonstrate that the code being tested is the code being shipped.
+04 · Requirements Gap
+Documented features not implemented in the reference application
+Requirement
+Reference status
+Team Guild treatment
+Persistent profiles
+Not implemented as documented
+Evaluate; not automatically required
+QR sharing
+Not implemented
+Defer unless compelling requirement exists
+Hello & Thank You
+Not implemented
+Requirements review
+Trip Review
+Mentioned, not implemented as a feature
+Future/P1 unless required
+Resources & References page
+Not implemented as specified
+Address through Team Guild resource experience
+Storybook display choice
+Not implemented as specified
+Evaluate against user value
+Line art for each story line
+Not implemented
+Future enhancement
+Editable individual sentences
+Not implemented
+P1/Future
+Important: Missing features in AJ's implementation do not automatically become mandatory Team Guild features. We are extracting the underlying user requirement and deciding on the technically appropriate solution.
+05 · Bobathon Readiness
+Why the existing repository is not submission-ready
+Submission area
+Assessment
+Required README structure
+Does not currently provide the complete Problem Statement, Detailed Solution, Assumptions/Approach and How Bob Was Used structure expected for submission.
+Bob session evidence
+Complete exported Bob sessions are not established by the repository.
+Demo video
+Not present as part of the reference repository.
+Event-period provenance
+The repository alone does not establish when all Bob-assisted development occurred.
+Engineering evidence
+Test/production-code divergence prevents the current test count from serving as reliable validation of the running application.
+06 · Team Guild Engineering Decision
+What we are building instead
+Team Guild is not repairing and resubmitting the original HTML prototype. We are engineering a new Calm Skies Journey Builder from the underlying requirements.
+
+1. Product input — Calm Skies concept, research and requirements
+2. Team engineering — requirements analysis and architecture decisions
+3. IBM Bob — substantive implementation
+4. Verification — automated testing, security and accessibility review
+5. Remediation — findings returned to Bob and corrected
+6. Evidence — requirements → implementation → tests → results
+7. Submission — Team Guild Calm Skies Journey Builder
+07 · Engineering Principles
+What will distinguish the new application
+Principle
+Team Guild standard
+Security
+User-controlled data must render safely. Security defects become regression tests.
+Privacy
+Minimize personal information, persistence and unnecessary third-party requests.
+Testing
+Tests must exercise the actual application logic being shipped.
+Accessibility
+Separate design intent, automated checks, manual verification and conformance evidence.
+Maintainability
+Use clear architecture and avoid unnecessary duplication.
+Evidence
+Every important technical claim should be traceable to implementation and validation.
+Documentation
+Documentation must describe the application that actually exists.
+08 · Credit & Collaboration
+How the contributions fit together
+Contribution
+Role in final project
+Calm Skies concept
+Foundation of the project
+AJ's research and requirements
+Product/domain input
+Team Guild
+Requirements decisions, architecture, review, validation and project direction
+IBM Bob
+Primary engineering agent for the new Bobathon implementation
+Final application
+New Team Guild Bobathon implementation
+The compromise is not “AJ's app versus Team Guild's app.”
+
+AJ brought the problem and valuable product knowledge. Team Guild is turning those requirements into the strongest application we can engineer during the Bobathon.
+09 · Final Project Position
+Recommended path forward
+“We are not rebuilding a sample HTML page. We are engineering a new Team Guild application from the Calm Skies requirements and using IBM Bob across the software-development lifecycle.”
+AJ brought Team Guild a meaningful accessibility problem, product concept and domain requirements.
+
+Team Guild analyzed those requirements and designed a new implementation.
+
+IBM Bob helped turn those requirements into working software and participated across implementation, testing, remediation and documentation.
+
+The team then validated the result through automated tests, security review, privacy review and accessibility testing.
+This produces a stronger submission than attempting to finish or repair an existing prototype because it demonstrates the contribution of the team, the contribution of IBM Bob, and a complete engineering process.
+
+10 · Conclusion
+One concept. One team. A new implementation.
+AJ's work gives Team Guild a strong product foundation. Our responsibility during the Bobathon is to turn that foundation into a technically defensible application.
+
+Project direction: Preserve the mission. Preserve the requirements that create user value. Engineer the implementation correctly. Validate every important claim. Demonstrate what Team Guild and IBM Bob built during the Bobathon.

@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Calm Skies Travel — Live Smoke Tests</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, "Segoe UI", system-ui, sans-serif; font-size: 14px;
+           line-height: 1.6; background: #f7f8fa; color: #1f2328; padding: 24px; }
+    h1   { font-size: 1.4rem; color: #2E7CB8; margin-bottom: 4px; }
+    .subtitle { color: #57606a; font-size: 0.88rem; margin-bottom: 20px; }
+    h2   { font-size: 1rem; font-weight: 700; color: #2E7CB8; margin: 20px 0 8px; }
+    #url-bar { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+    #url-input { flex: 1; min-width: 240px; padding: 7px 10px; border: 1px solid #d1d5db;
+                 border-radius: 6px; font-size: 13px; }
+    button { padding: 7px 16px; background: #2E7CB8; color: #fff; border: none;
+             border-radius: 6px; cursor: pointer; font-size: 13px; }
+    button:hover { background: #1a6097; }
+    #summary { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 16px;
+               padding: 12px 16px; background: #fff; border: 1px solid #e5e7eb;
+               border-radius: 8px; }
+    .sum-item { font-size: 0.92rem; font-weight: 700; }
+    .sum-pass  { color: #006B3C; }
+    .sum-fail  { color: #C0392B; }
+    .sum-total { color: #2E7CB8; }
+    .test-row  { display: flex; align-items: flex-start; gap: 10px; padding: 8px 12px;
+                 border-radius: 6px; margin-bottom: 4px; background: #fff;
+                 border: 1px solid #e5e7eb; }
+    .test-row.pass { background: #EBF7F0; border-color: #a7dfc0; }
+    .test-row.fail { background: #FDF0EF; border-color: #f5c0bb; }
+    .test-icon { font-size: 1rem; }
+    .test-name { font-weight: 600; color: #2D3748; font-size: 0.9rem; }
+    .test-detail { font-size: 0.8rem; color: #57606a; margin-top: 2px; }
+    .test-badge { font-size: 0.72rem; font-weight: 700; padding: 2px 7px;
+                  border-radius: 4px; margin-left: auto; white-space: nowrap; align-self: center; }
+    .test-badge.pass { background: #006B3C; color: #fff; }
+    .test-badge.fail { background: #C0392B; color: #fff; }
+    .instructions { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px;
+                    padding: 16px; margin-bottom: 20px; font-size: 0.88rem; color: #57606a; }
+    .instructions code { background: #f0f0f0; padding: 1px 5px; border-radius: 3px;
+                         font-size: 0.85rem; color: #1f2328; }
+    #status-msg { font-size: 0.88rem; color: #57606a; margin-bottom: 12px; min-height: 20px; }
+    .footer-note { margin-top: 32px; padding-top: 12px; border-top: 1px solid #e5e7eb;
+                   text-align: center; font-size: 0.78rem; color: #57606a; }
+  </style>
+</head>
+<body>
+
+<h1>Calm Skies Travel — Live Smoke Tests</h1>
+<p class="subtitle">Fetches the live site and verifies key structural elements are present.</p>
+
+<div class="instructions">
+  <strong>How to run:</strong><br/>
+  <strong>Locally:</strong> Open <code>smoke-test.html</code> in a browser alongside the site
+  (e.g. via a local server like <code>python -m http.server</code>) and use
+  <code>http://localhost:8000/index.html</code> as the URL.<br/>
+  <strong>GitHub Pages:</strong> Enter
+  <code>https://aj-aronoff.github.io/CalmSkiesTravel/</code> and click Run Tests.<br/>
+  <strong>Note:</strong> Fetching a different origin requires CORS to be permitted.
+  GitHub Pages serves with permissive CORS headers, so the live URL works directly.
+</div>
+
+<div id="url-bar">
+  <input id="url-input" type="url"
+         value="https://aj-aronoff.github.io/CalmSkiesTravel/"
+         placeholder="URL to test (e.g. https://aj-aronoff.github.io/CalmSkiesTravel/)"/>
+  <button id="run-btn">▶ Run Tests</button>
+</div>
+
+<div id="status-msg">Enter a URL and click Run Tests.</div>
+
+<div id="summary" style="display:none;">
+  <span class="sum-item sum-total">Total: <span id="s-total">–</span></span>
+  <span class="sum-item sum-pass">✅ Passed: <span id="s-pass">–</span></span>
+  <span class="sum-item sum-fail">❌ Failed: <span id="s-fail">–</span></span>
+</div>
+
+<div id="results"></div>
+
+<div class="footer-note">
+  Calm Skies Travel — Smoke Test Suite &nbsp;·&nbsp; Created by IBM Bob
+</div>
+
+<script>
+'use strict';
+
+var results = [];
+
+function addResult(status, name, detail) {
+  results.push({ status: status, name: name, detail: detail || '' });
+}
+
+function renderResults() {
+  var container = document.getElementById('results');
+  container.innerHTML = '';
+
+  var passed = 0, failed = 0;
+  results.forEach(function (r) {
+    if (r.status === 'pass') { passed++; } else { failed++; }
+    var icon  = r.status === 'pass' ? '✅' : '❌';
+    var badge = '<span class="test-badge ' + r.status + '">' +
+                (r.status === 'pass' ? 'PASS' : 'FAIL') + '</span>';
+    var detail = r.detail
+      ? '<div class="test-detail">' +
+        r.detail.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') +
+        '</div>'
+      : '';
+    container.insertAdjacentHTML('beforeend',
+      '<div class="test-row ' + r.status + '">' +
+        '<span class="test-icon">' + icon + '</span>' +
+        '<div><span class="test-name">' + r.name + '</span>' + detail + '</div>' +
+        badge +
+      '</div>');
+  });
+
+  var total = passed + failed;
+  document.getElementById('s-total').textContent = total;
+  document.getElementById('s-pass').textContent  = passed;
+  document.getElementById('s-fail').textContent  = failed;
+  document.getElementById('summary').style.display = 'flex';
+
+  var confEl = document.getElementById('s-pass').parentElement;
+  confEl.style.color = failed === 0 ? '#006B3C' : '#C0392B';
+}
+
+function runSmokeTests(html, url) {
+  results = [];
+
+  /* Parse the fetched HTML into a document we can query */
+  var parser = new DOMParser();
+  var doc    = parser.parseFromString(html, 'text/html');
+
+  function check(name, fn) {
+    try {
+      var result = fn(doc);
+      if (result === true) {
+        addResult('pass', name);
+      } else {
+        addResult('fail', name, result || 'assertion returned false');
+      }
+    } catch (e) {
+      addResult('fail', name, e.message);
+    }
+  }
+
+  /* ── Structural checks ── */
+  check('Page has a <title> element', function (d) {
+    var t = d.querySelector('title');
+    return t && t.textContent.trim().length > 0 ? true : 'No <title> found';
+  });
+
+  check('Page has lang attribute on <html>', function (d) {
+    var lang = d.documentElement.getAttribute('lang');
+    return lang ? true : 'Missing lang attribute on <html>';
+  });
+
+  check('Tab list #main-tablist is present', function (d) {
+    return d.getElementById('main-tablist') ? true : '#main-tablist not found';
+  });
+
+  check('At least 8 tab buttons are present', function (d) {
+    var tabs = d.querySelectorAll('[role="tab"]');
+    return tabs.length >= 8 ? true : 'Only ' + tabs.length + ' tab buttons found (expected ≥8)';
+  });
+
+  check('Story Builder panel #panel-storybuilder is present', function (d) {
+    return d.getElementById('panel-storybuilder') ? true : '#panel-storybuilder not found';
+  });
+
+  check('Story card #story-card is present', function (d) {
+    return d.getElementById('story-card') ? true : '#story-card not found';
+  });
+
+  check('Story Builder input #sb-name is present', function (d) {
+    return d.getElementById('sb-name') ? true : '#sb-name input not found';
+  });
+
+  check('Story Builder input #sb-destination is present', function (d) {
+    return d.getElementById('sb-destination') ? true : '#sb-destination input not found';
+  });
+
+  check('Story Builder input #sb-visiting is present', function (d) {
+    return d.getElementById('sb-visiting') ? true : '#sb-visiting input not found';
+  });
+
+  check('Story Builder input #sb-comfort is present', function (d) {
+    return d.getElementById('sb-comfort') ? true : '#sb-comfort input not found';
+  });
+
+  check('Story Builder input #sb-calm is present', function (d) {
+    return d.getElementById('sb-calm') ? true : '#sb-calm input not found';
+  });
+
+  check('Story Builder input #sb-detail is present', function (d) {
+    return d.getElementById('sb-detail') ? true : '#sb-detail input not found';
+  });
+
+  check('Save button #sb-save-btn is present', function (d) {
+    return d.getElementById('sb-save-btn') ? true : '#sb-save-btn not found';
+  });
+
+  check('Load file input #sb-load-input is present', function (d) {
+    return d.getElementById('sb-load-input') ? true : '#sb-load-input not found';
+  });
+
+  check('storybuilder.js is referenced in the page', function (d) {
+    var scripts = d.querySelectorAll('script[src]');
+    for (var i = 0; i < scripts.length; i++) {
+      if (scripts[i].getAttribute('src').indexOf('storybuilder.js') !== -1) { return true; }
+    }
+    return 'No <script src="storybuilder.js"> found — production code may not be using the tested module';
+  });
+
+  check('"Our Story" tab is present', function (d) {
+    return d.getElementById('tab-ourstory') ? true : '#tab-ourstory not found';
+  });
+
+  check('"Before / During / After" panel is present', function (d) {
+    return d.getElementById('panel-bda') ? true : '#panel-bda not found';
+  });
+
+  check('Site footer is present', function (d) {
+    return d.querySelector('footer') ? true : 'No <footer> element found';
+  });
+
+  check('No inline onclick handlers on tab buttons (XSS hygiene)', function (d) {
+    var tabs = d.querySelectorAll('[role="tab"]');
+    for (var i = 0; i < tabs.length; i++) {
+      if (tabs[i].getAttribute('onclick')) {
+        return 'Tab button has inline onclick handler — should use addEventListener';
+      }
+    }
+    return true;
+  });
+
+  renderResults();
+}
+
+document.getElementById('run-btn').addEventListener('click', function () {
+  var url = document.getElementById('url-input').value.trim();
+  if (!url) {
+    document.getElementById('status-msg').textContent = '⚠️ Please enter a URL.';
+    return;
+  }
+
+  document.getElementById('status-msg').textContent = '⏳ Fetching ' + url + ' …';
+  document.getElementById('results').innerHTML = '';
+  document.getElementById('summary').style.display = 'none';
+
+  fetch(url)
+    .then(function (res) {
+      if (!res.ok) {
+        document.getElementById('status-msg').textContent =
+          '❌ HTTP ' + res.status + ' — could not load ' + url;
+        results = [];
+        addResult('fail', 'HTTP response is 200 OK', 'Got HTTP ' + res.status);
+        renderResults();
+        return null;
+      }
+      return res.text();
+    })
+    .then(function (html) {
+      if (!html) { return; }
+      document.getElementById('status-msg').textContent = '✅ Fetched ' + url;
+      runSmokeTests(html, url);
+    })
+    .catch(function (err) {
+      document.getElementById('status-msg').textContent = '❌ Fetch error: ' + err.message;
+      results = [];
+      addResult('fail', 'Page is reachable', err.message);
+      renderResults();
+    });
+});
+</script>
+
+</body>
+</html>
