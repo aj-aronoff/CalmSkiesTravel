@@ -184,20 +184,99 @@ function roundTripStoryData(domLookup) {
 }
 
 /* ─────────────────────────────────────────────────────────────────
+   LOCAL STORAGE
+   Key used to store the story in localStorage.
+   All data stays in the parent's browser — nothing is sent to any server.
+───────────────────────────────────────────────────────────────── */
+
+var LOCAL_STORAGE_KEY = 'calmSkiesStory';
+
+/**
+ * Save the current Story Builder fields to localStorage.
+ * Returns true on success, false if localStorage is unavailable.
+ *
+ * @param {object} [domLookup] - Optional injected document for testing.
+ * @returns {boolean}
+ */
+function saveToLocalStorage(domLookup) {
+  try {
+    var data = collectStoryData(domLookup);
+    var json = serialiseStoryData(data);
+    localStorage.setItem(LOCAL_STORAGE_KEY, json);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+/**
+ * Load a previously saved story from localStorage and populate the form fields.
+ * Returns { success: boolean, reason: string }.
+ *
+ * @param {object} [domLookup]  - Optional injected document for testing.
+ * @param {function} [updateFn] - Optional callback called after fields are set.
+ * @returns {{ success: boolean, reason: string }}
+ */
+function loadFromLocalStorage(domLookup, updateFn) {
+  try {
+    var json = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (!json) { return { success: false, reason: 'No saved story found.' }; }
+    var data = parseStoryJSON(json);
+    if (!data) { return { success: false, reason: 'Saved data could not be parsed.' }; }
+    return populateStoryFields(data, domLookup, updateFn);
+  } catch (e) {
+    return { success: false, reason: 'localStorage is not available.' };
+  }
+}
+
+/**
+ * Clear the saved story from localStorage.
+ * Returns true on success, false if localStorage is unavailable.
+ *
+ * @returns {boolean}
+ */
+function clearLocalStorage() {
+  try {
+    localStorage.removeItem(LOCAL_STORAGE_KEY);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+/**
+ * Return true if a saved story exists in localStorage.
+ *
+ * @returns {boolean}
+ */
+function hasSavedStory() {
+  try {
+    return localStorage.getItem(LOCAL_STORAGE_KEY) !== null;
+  } catch (e) {
+    return false;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────
    EXPORTS  (Node.js / test runner)
    In a plain browser <script> these are silently unused.
 ───────────────────────────────────────────────────────────────── */
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
-    SCHEMA_VERSION:      SCHEMA_VERSION,
-    FIELD_IDS:           FIELD_IDS,
-    FIELD_MAP:           FIELD_MAP,
-    getFieldValue:       getFieldValue,
-    collectStoryData:    collectStoryData,
-    validateStoryData:   validateStoryData,
-    populateStoryFields: populateStoryFields,
-    serialiseStoryData:  serialiseStoryData,
-    parseStoryJSON:      parseStoryJSON,
-    roundTripStoryData:  roundTripStoryData
+    SCHEMA_VERSION:       SCHEMA_VERSION,
+    FIELD_IDS:            FIELD_IDS,
+    FIELD_MAP:            FIELD_MAP,
+    LOCAL_STORAGE_KEY:    LOCAL_STORAGE_KEY,
+    getFieldValue:        getFieldValue,
+    collectStoryData:     collectStoryData,
+    validateStoryData:    validateStoryData,
+    populateStoryFields:  populateStoryFields,
+    serialiseStoryData:   serialiseStoryData,
+    parseStoryJSON:       parseStoryJSON,
+    roundTripStoryData:   roundTripStoryData,
+    saveToLocalStorage:   saveToLocalStorage,
+    loadFromLocalStorage: loadFromLocalStorage,
+    clearLocalStorage:    clearLocalStorage,
+    hasSavedStory:        hasSavedStory
   };
 }

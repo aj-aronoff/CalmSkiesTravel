@@ -63,8 +63,11 @@ The site shall contain the following tabs in the following order:
 
 ### 1.5 Data Portability (No Server Storage)
 - **REQ-DATA-01:** No child data shall ever be stored on the server. This is an absolute, non-negotiable requirement.
+- **REQ-DATA-02:** Story Builder fields shall be auto-saved to the browser's localStorage (`calmSkiesStory`) on every keystroke and restored automatically on the next visit.
 - **REQ-DATA-03:** The parent shall be able to export the child's story as a JSON file download.
 - **REQ-DATA-04:** The parent shall be able to import a previously saved JSON file to re-populate all form fields.
+- **REQ-DATA-05:** The story shall be exportable as a QR code — clicking "Share via QR Code" draws the encoded story onto a canvas element in the browser.
+- **REQ-DATA-06:** The QR code shall be shareable — any device camera can scan it to load the story pre-filled.
 - **REQ-DATA-07:** No network calls shall be made for profile data. This shall be confirmed in code comments.
 
 ---
@@ -75,9 +78,6 @@ The site shall contain the following tabs in the following order:
 
 | Requirement ID | Feature | Notes |
 |---|---|---|
-| REQ-DATA-02 | localStorage persistence — auto-reload form between sessions | Optional enhancement; see update-plan.md |
-| REQ-DATA-05 | QR code export — encode story as scannable QR | Optional enhancement; see update-plan.md |
-| REQ-DATA-06 | QR code sharing — scan-to-populate for caregivers | Depends on REQ-DATA-05 |
 | REQ-SB-08 | Line-art illustrations per story beat | Future visual enhancement |
 | REQ-SB-09 | Editable individual sentences in the generated story | Future UX enhancement |
 | REQ-HTY-01–05 | Hello & Thank You section | Full section not yet built |

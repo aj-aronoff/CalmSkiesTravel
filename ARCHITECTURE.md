@@ -103,16 +103,15 @@ Social Story Card (live update, no submit)
 
 ```
 Current implementation:
-  Data lives in form DOM nodes only — not persisted between sessions.
+  Data lives in form DOM nodes — auto-saved to localStorage on every keystroke.
   JSON download  → parent saves file locally via browser download
   JSON upload    → FileReader API re-populates form fields (browser only)
-
-Future (not yet implemented):
-  localStorage persistence — would allow the form to reload between visits
-  QR code export — would encode the JSON for camera-scannable sharing
+  localStorage   → form auto-restores on next visit (same browser, same device)
+  QR code        → "Share via QR Code" button encodes story JSON onto a canvas;
+                   scan with any phone camera to load the story on another device
 ```
 
-No network. No server. No account.
+No network. No server. No account. localStorage key: `calmSkiesStory`.
 
 ### 5. Print Architecture
 
@@ -204,8 +203,8 @@ CalmSkiesTravel/
 | Build pipeline | None | Parent should be able to open the file and see the site |
 | Font delivery | Google Fonts CSS import | Reliable; fallback to system sans-serif if offline |
 | Icon format | PNG (from PPTX) + inline SVG | PNGs extracted from presentation; SVGs used for complex icons |
-| Data persistence | None (Future: localStorage) | Data lives in form DOM only for current implementation; localStorage is a planned optional enhancement |
-| QR code generation | None (Future: qrcode.js) | Not yet implemented; planned as an optional enhancement |
+| Data persistence | localStorage (`calmSkiesStory`) | Auto-saves on every keystroke; restores on next visit; browser-only |
+| QR code generation | Self-contained inline encoder | No CDN; encodes story JSON to canvas; scan with phone camera |
 | HTTPS | IONOS Let's Encrypt SSL | Free with IONOS plan; no configuration cost |
 | Hosting | IONOS Web Hosting Plus / GitHub Pages | Static file hosting; deployed via GitHub Pages |
 

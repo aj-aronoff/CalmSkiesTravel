@@ -224,6 +224,18 @@ function runSmokeTests(html, url) {
     return d.querySelector('footer') ? true : 'No <footer> element found';
   });
 
+  check('"Share via QR Code" button is present', function (d) {
+    return d.getElementById('sb-qr-btn') ? true : '#sb-qr-btn not found';
+  });
+
+  check('QR canvas element is present', function (d) {
+    return d.getElementById('sb-qr-canvas') ? true : '#sb-qr-canvas not found';
+  });
+
+  check('Autosave row element is present', function (d) {
+    return d.getElementById('sb-autosave-row') ? true : '#sb-autosave-row not found';
+  });
+
   check('No inline onclick handlers on tab buttons (XSS hygiene)', function (d) {
     var tabs = d.querySelectorAll('[role="tab"]');
     for (var i = 0; i < tabs.length; i++) {

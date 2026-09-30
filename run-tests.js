@@ -7,6 +7,15 @@
  */
 'use strict';
 
+/* ─── Minimal localStorage shim ─── */
+var _lsStore = {};
+global.localStorage = {
+  getItem:    function(k)    { return Object.prototype.hasOwnProperty.call(_lsStore, k) ? _lsStore[k] : null; },
+  setItem:    function(k, v) { _lsStore[k] = String(v); },
+  removeItem: function(k)    { delete _lsStore[k]; },
+  clear:      function()     { _lsStore = {}; }
+};
+
 /* ─── Minimal DOM shim ─── */
 var store = {};
 
@@ -46,7 +55,12 @@ var validateStoryData   = sb.validateStoryData;
 var populateStoryFields = sb.populateStoryFields;
 var serialiseStoryData  = sb.serialiseStoryData;
 var parseStoryJSON      = sb.parseStoryJSON;
-var roundTripStoryData  = sb.roundTripStoryData;
+var roundTripStoryData    = sb.roundTripStoryData;
+var LOCAL_STORAGE_KEY     = sb.LOCAL_STORAGE_KEY;
+var saveToLocalStorage    = sb.saveToLocalStorage;
+var loadFromLocalStorage  = sb.loadFromLocalStorage;
+var clearLocalStorage     = sb.clearLocalStorage;
+var hasSavedStory         = sb.hasSavedStory;
 
 /* ─── Test harness ─── */
 var passed = 0, failed = 0;
@@ -422,6 +436,84 @@ test('populateStoryFields sets values from XSS payload without executing', funct
   assertEqual(elements['sb-name'].value, '<script>bad()</script>', 'name stored as text');
   assertEqual(elements['sb-visiting'].value, '<b>bold</b>', 'visiting stored as text');
   clearAllFields();
+});
+
+/* ══ GROUP 10 — localStorage ══ */
+console.log('\nGroup 10 — localStorage');
+test('LOCAL_STORAGE_KEY is a non-empty string', function() {
+  assertTrue(typeof LOCAL_STORAGE_KEY === 'string' && LOCAL_STORAGE_KEY.length > 0, 'key');
+});
+test('hasSavedStory returns false when nothing saved', function() {
+  localStorage.clear();
+  assertFalse(hasSavedStory(), 'empty storage');
+});
+test('saveToLocalStorage returns true', function() {
+  localStorage.clear();
+  fillAllFields();
+  assertTrue(saveToLocalStorage(), 'save ok');
+  clearAllFields();
+});
+test('hasSavedStory returns true after save', function() {
+  localStorage.clear();
+  fillAllFields();
+  saveToLocalStorage();
+  assertTrue(hasSavedStory(), 'has story');
+  clearAllFields();
+});
+test('loadFromLocalStorage restores all fields', function() {
+  localStorage.clear();
+  fillAllFields();
+  saveToLocalStorage();
+  clearAllFields();
+  var r = loadFromLocalStorage();
+  assertTrue(r.success, 'load success');
+  assertEqual(elements['sb-name'].value,        'Maya',                 'name');
+  assertEqual(elements['sb-visiting'].value,    'Grandma',              'visiting');
+  assertEqual(elements['sb-destination'].value, 'Florida',              'dest');
+  assertEqual(elements['sb-comfort'].value,     'blue blanket',         'comfort');
+  assertEqual(elements['sb-calm'].value,        'squeeze my fidget',    'calm');
+  assertEqual(elements['sb-detail'].value,      'swimming in the pool', 'detail');
+  clearAllFields();
+  localStorage.clear();
+});
+test('loadFromLocalStorage returns failure when storage empty', function() {
+  localStorage.clear();
+  var r = loadFromLocalStorage();
+  assertFalse(r.success, 'fail on empty');
+  assertTrue(r.reason.length > 0, 'has reason');
+});
+test('clearLocalStorage returns true', function() {
+  localStorage.clear();
+  fillAllFields();
+  saveToLocalStorage();
+  assertTrue(clearLocalStorage(), 'clear ok');
+  assertFalse(hasSavedStory(), 'gone after clear');
+  clearAllFields();
+});
+test('loadFromLocalStorage calls updateFn callback', function() {
+  localStorage.clear();
+  fillAllFields();
+  saveToLocalStorage();
+  clearAllFields();
+  var called = false;
+  loadFromLocalStorage(document, function(){ called = true; });
+  assertTrue(called, 'callback called');
+  clearAllFields();
+  localStorage.clear();
+});
+test('saved story round-trips XSS payload safely', function() {
+  localStorage.clear();
+  clearAllFields();
+  setField('sb-name', '<script>alert(1)</script>');
+  setField('sb-visiting','G'); setField('sb-destination','D');
+  setField('sb-comfort','C'); setField('sb-calm','Ca'); setField('sb-detail','De');
+  saveToLocalStorage();
+  clearAllFields();
+  var r = loadFromLocalStorage();
+  assertTrue(r.success, 'load ok');
+  assertEqual(elements['sb-name'].value, '<script>alert(1)</script>', 'xss verbatim');
+  clearAllFields();
+  localStorage.clear();
 });
 
 /* ══ SUMMARY ══ */
